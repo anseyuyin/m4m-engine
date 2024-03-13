@@ -64,3 +64,6 @@ example/.temp/*
 dev
 
 dist*
+
+# engine example
+examples
