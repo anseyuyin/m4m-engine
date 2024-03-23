@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-namespace m4m.framework
-{
+namespace m4m.framework {
     export declare let physics: PhysicsEngine;
     export declare let physics2D: physicEngine2D;
     /**
@@ -25,8 +24,7 @@ namespace m4m.framework
      * 场景是基础的功能，有场景图，相当于Unity的Level
      * @version m4m 1.0
      */
-    export class scene
-    {
+    export class scene {
         /**
          * @public
          * @language zh_CN
@@ -47,8 +45,7 @@ namespace m4m.framework
          * 引擎场景
          * @param 引擎 app
          */
-        constructor(app: application)
-        {
+        constructor(app: application) {
             this.app = app;
             this.webgl = app.webgl;
             this.assetmgr = app.getAssetMgr();
@@ -56,6 +53,7 @@ namespace m4m.framework
             this.rootNode = new transform();
             this.rootNode.scene = this;
             this.renderList = new renderList();
+            this._renderPipeline = new render.forwardPipeline();
         }
         /**
          * @public
@@ -79,6 +77,27 @@ namespace m4m.framework
         renderList: renderList;
         private assetmgr: assetMgr;
         private _overlay2ds: Array<overlay2D>;
+        private _renderPipeline: render.IRenderPipeLine;
+
+        /**
+         * 渲染路径实例
+         */
+        public get renderPipeline() {
+            return this._renderPipeline;
+        }
+
+        public set renderPipeline(val: render.IRenderPipeLine) {
+            this._renderPipeline = val;
+        }
+
+        /**
+         * 获取 ScreenSpaceOverlay 列表
+         * @returns 
+         */
+        public getScreenSpaceOverlays() {
+            return this._overlay2ds;
+        }
+
         /**
          * @public
          * @language zh_CN
@@ -86,8 +105,7 @@ namespace m4m.framework
          * 添加ScreenSpaceOverlay
          * @version m4m 1.0
          */
-        addScreenSpaceOverlay(overlay: overlay2D)
-        {
+        addScreenSpaceOverlay(overlay: overlay2D) {
             if (!overlay) return;
             if (!this._overlay2ds) this._overlay2ds = [];
             let ol2ds = this._overlay2ds;
@@ -103,9 +121,8 @@ namespace m4m.framework
          * 删除ScreenSpaceOverlay
          * @version m4m 1.0
          */
-        removeScreenSpaceOverlay(overlay)
-        {
-            let  ol2ds = this._overlay2ds;
+        removeScreenSpaceOverlay(overlay) {
+            let ol2ds = this._overlay2ds;
             if (!overlay || !ol2ds) return;
             let idx = ol2ds.indexOf(overlay);
             if (idx != -1) ol2ds.splice(idx, 1);
@@ -128,10 +145,8 @@ namespace m4m.framework
          * 获取当前主相机
          * @version m4m 1.0
          */
-        public get mainCamera()
-        {
-            if (this._mainCamera == null)
-            {
+        public get mainCamera() {
+            if (this._mainCamera == null) {
                 this._mainCamera = this.renderCameras[0];
             }
             return this._mainCamera;
@@ -144,16 +159,21 @@ namespace m4m.framework
          * @param _camera 相机组件实例
          * @version m4m 1.0
          */
-        public set mainCamera(_camera: camera)
-        {
-            for (let i in this.renderCameras)
-            {
-                if (this.renderCameras[i] == _camera)
-                {
+        public set mainCamera(_camera: camera) {
+            for (let i in this.renderCameras) {
+                if (this.renderCameras[i] == _camera) {
                     this._mainCamera = _camera;
                 }
             }
         }
+
+        /**
+         * 主相机设置为空
+         */
+        public setMainCameraNull() {
+            this._mainCamera = null;
+        }
+
         public renderContext: renderContext[] = [];
         private renderLights: light[] = [];//需要光源 class
         /**
@@ -183,198 +203,73 @@ namespace m4m.framework
          * @param delta
          * @version m4m 1.0
          */
-        update(delta: number)
-        {
-
-
+        update(delta: number) {
             //更新矩阵
             //this.rootNode.updateTran(false);
             //this.rootNode.updateAABBChild();//更新完tarn再更新子物体aabb 确保每个transform的aabb正确
-            material["lastDrawMatID"] = material["lastDrawMeshID"] = render.glDrawPass["lastPassID"] = -1;  //每帧 清理 material 的记录 ， 避免 显示bug
+            // material["lastDrawMatID"] = material["lastDrawMeshID"] = render.glDrawPass["lastPassID"] = -1;  //每帧 清理 material 的记录 ， 避免 显示bug
+
+            //清理上一帧数据
+            material.resetCacheID();            //每帧 清理 material 的记录 ， 避免 显示bug
+            render.glDrawPass.resetCacheID();
 
             //更新跑一遍，刷出渲染列表
-            if(this.autoCollectlightCamera){
+            if (this.autoCollectlightCamera) {
                 this.renderCameras.length = 0;
                 this.renderLights.length = 0;
             }
             this.renderList.clear();
 
             // aniplayer.playerCaches = [];
-            this.updateSceneOverLay(delta); 
+            this.updateSceneOverLay(delta);
 
             //递归的更新与填充渲染列表
             this.updateScene(this.rootNode, delta);
             if (this.onLateUpdate)
                 this.onLateUpdate(delta);
 
-            if (physics2D && physics2D.engineRunner)
-            {
+            if (physics2D && physics2D.engineRunner) {
                 physics2D.engineRunner.tick(delta);
             }
 
-            if (physics)
-            {
+            if (physics) {
                 physics._step(delta);
             }
 
             //清理空引用
-            if (this._mainCamera && !this._mainCamera.gameObject)
-            {
+            if (this._mainCamera && !this._mainCamera.gameObject) {
                 this._mainCamera = null;
             }
-            //排序camera 并绘制
-            if (this.renderCameras.length > 1)
-            {
-                this.renderCameras.sort((a, b) =>
-                {
-                    return a.order - b.order;
-                });
-            }
 
-
-            this.RealCameraNumber = 0;
-            var len = this.renderCameras.length;
-            for (var i = 0; i < len; i++)
-            {
-                render.glDrawPass.resetLastState();
-                if (i == len - 1)
-                {
-                    this.renderCameras[i].isLastCamera = true;
-                }
-                if (this.app.beRendering)
-                {
-                    this._renderCamera(i);
-                }
-                this.renderCameras[i].isLastCamera = false;
-            }
-
-            // this.updateSceneOverLay(delta);
-            this.rendererSceneOverLay();
-
-            if (this.RealCameraNumber == 0 && this.app && this.app.beRendering)
-            {
-                this.webgl.clearColor(0, 0, 0, 1);
-                this.webgl.clearDepth(1.0);
-                this.webgl.clear(this.webgl.COLOR_BUFFER_BIT | this.webgl.DEPTH_BUFFER_BIT);
-                this.webgl.flush();
-            }
-
-            if (DrawCallInfo.BeActived)
-            {
-                DrawCallInfo.inc.showPerFrame();
-                DrawCallInfo.inc.reset();
-            }
+            //渲染场景
+            this.renderer();
         }
 
-        /**
-         * 渲染场景 2dUI overlay
-         */
-        private rendererSceneOverLay(){
-            let ol2ds = this._overlay2ds;
-            if (!ol2ds || ol2ds.length < 1) return;
+        private renderer() {
+            if (!this._renderPipeline) {
+                console.warn(`can't rendering , renderPipeline is null.`);
+                return;
+            }
 
-            let targetcamera = this.mainCamera;
-            if ( !targetcamera) return;
-            let rCams = this.renderCameras;
-            let mainCamIdx = rCams.indexOf(targetcamera);
-            if (mainCamIdx == -1)
-            {
-                let cname = targetcamera.gameObject.getName();
-                let oktag = false;
-                for (var i = 0, l = rCams.length; i < l; i++)
-                {
-                    let cam = rCams[i];
-                    if (cam && cam.gameObject.getName() == cname)
-                    {
-                        targetcamera = this.mainCamera = cam;
-                        oktag = true;
-                        break;
-                    }
-                }
-                if (!oktag)
-                {
-                    this._mainCamera = null;
-                    targetcamera = this.mainCamera;
-                }
-            }
-            mainCamIdx = rCams.indexOf(targetcamera);
-            if (!targetcamera) return;
-            let len = ol2ds.length;
-            for (var i = 0, l = len; i < l; ++i)
-            {
-                var overlay = ol2ds[i];
-                if (overlay && this.app && this.app.beRendering)
-                {
-                    overlay.render(this.renderContext[mainCamIdx], this.assetmgr, targetcamera);
-                }
-            }
+            //执行渲染
+            this._renderPipeline.render(this);
         }
 
         /**
          * 更新 场景 覆盖层
          * @param delta 上帧时间变量
          */
-        private updateSceneOverLay(delta: number)
-        {
+        private updateSceneOverLay(delta: number) {
             let ol2ds = this._overlay2ds;
             if (!ol2ds || ol2ds.length < 1) return;
             let targetcamera = this.mainCamera;
             if (!targetcamera) return;
-            if(this.renderCameras.indexOf(targetcamera) == -1) return;
-            for (var i = 0, l = ol2ds.length; i < l; ++i)
-            {
+            if (this.renderCameras.indexOf(targetcamera) == -1) return;
+            for (var i = 0, l = ol2ds.length; i < l; ++i) {
                 var overlay = ol2ds[i];
-                if (overlay)
-                {
+                if (overlay) {
                     overlay.start(targetcamera);
                     overlay.update(delta);
-                }
-            }
-        }
-
-        private RealCameraNumber: number = 0;
-        /**
-         * 渲染相机
-         * 这个函数后面还有别的过程，应该留给camera
-         * @param camindex 相机索引
-         */
-        private _renderCamera(camindex: number)
-        {
-            //增加当前编辑器状态，管控场编相机
-            //一个camera 不是一次单纯的绘制，camera 还有多个绘制遍
-            var cam = this.renderCameras[camindex];
-            var context = this.renderContext[camindex];
-            context.fog = this.fog;
-            if ((this.app.bePlay && !cam.isEditorCam) || (!this.app.bePlay && cam.isEditorCam))
-            {
-                context.updateCamera(this.app, cam);
-                context.updateLights(this.renderLights);
-                cam.fillRenderer(this);
-                cam.renderScene(this, context, camindex);
-                this.RealCameraNumber++;
-
-                // //还有overlay
-                let overLays: IOverLay[] = cam.getOverLays();
-                for (var i = 0; i < overLays.length; i++)
-                {
-                    if (cam.CullingMask & CullingMask.ui)
-                    {
-                        overLays[i].render(context, this.assetmgr, cam);
-                    }
-                }
-            }
-            if (!this.app.bePlay && this.app.be2dstate)
-            {
-                if (camindex == this.app.curcameraindex)
-                {
-                    let overLays: IOverLay[] = cam.getOverLays();
-                    for (var i = 0; i < overLays.length; i++)
-                    {
-                        if (cam.CullingMask & CullingMask.ui)
-                        {
-                            overLays[i].render(context, this.assetmgr, cam);
-                        }
-                    }
                 }
             }
         }
@@ -383,11 +278,9 @@ namespace m4m.framework
          * 给 覆盖层列表 排序
          * @param lays 覆盖层列表
          */
-        private sortOverLays(lays: IOverLay[])
-        {
+        private sortOverLays(lays: IOverLay[]) {
             if (!lays || lays.length < 1) return;
-            lays.sort((a, b) =>
-            {
+            lays.sort((a, b) => {
                 return a.sortOrder - b.sortOrder;
             });
         }
@@ -397,14 +290,11 @@ namespace m4m.framework
          * @param node 场景节点 
          * @param delta 上帧时间变量
          */
-        private updateScene(node: transform, delta)
-        {
-            if (this.app.bePlay)
-            {
+        private updateScene(node: transform, delta) {
+            if (this.app.bePlay) {
                 this.objupdate(node, delta);
             }
-            else
-            {
+            else {
                 this.objupdateInEditor(node, delta);
             }
         }
@@ -417,23 +307,19 @@ namespace m4m.framework
         private objupdateInEditor(node: transform, delta)//场编下
         {
             node.gameObject.init();//组件还未初始化的初始化
-            if (node.gameObject.renderer != null)
-            {
+            if (node.gameObject.renderer != null) {
                 node.gameObject.renderer.update(delta);//update 了啥
             }
 
-            if (node.gameObject.camera)
-            {
+            if (node.gameObject.camera) {
                 node.gameObject.camera.update(delta);//update 了啥
             }
 
-            if(this.autoCollectlightCamera)
+            if (this.autoCollectlightCamera)
                 this.collectCameraAndLight(node);
 
-            if (node.children != null)
-            {
-                for (var i = 0; i < node.children.length; i++)
-                {
+            if (node.children != null) {
+                for (var i = 0; i < node.children.length; i++) {
                     this.objupdateInEditor(node.children[i], delta);
                 }
             }
@@ -444,32 +330,30 @@ namespace m4m.framework
          * @param node 节点
          * @param delta 上帧时间变量
          */
-        private objupdate(node: transform, delta)
-        {
+        private objupdate(node: transform, delta) {
             let needInit = node.hasInitComp || node.hasInitCompChild || node.hasOnPlayComp || node.hasOnPlayCompChild;
             let needUpate = node.needUpdate;
-            if(needUpate)   needUpate =  node.hasUpdateComp || node.hasUpdateCompChild;
-            if(!needInit && !needUpate) return; //init 和 update 都不需要 直接return
+            if (needUpate) needUpate = node.hasUpdateComp || node.hasUpdateCompChild;
+            if (!needInit && !needUpate) return; //init 和 update 都不需要 直接return
 
-            if(node.hasInitCompChild){
+            if (node.hasInitCompChild) {
                 node.hasInitCompChild = false;
             }
 
             let go = node.gameObject;
             // if (go.needInit){
-            if (node.hasInitComp){
+            if (node.hasInitComp) {
                 go.init(this.app.bePlay);//组件还未初始化的初始化
             }
-            if (node.hasUpdateComp || node.hasOnPlayComp || node.hasOnPlayCompChild)
-            {
+            if (node.hasUpdateComp || node.hasOnPlayComp || node.hasOnPlayCompChild) {
                 go.update(delta);
             }
 
             // if(this.autoCollectlightCamera)          //流程放入 camera 和 light 的update中了
             //     this.collectCameraAndLight(node);
-       
+
             //这里要检测长度 因为在update 或init中 children会改变
-            for (var i = 0 ; i < node.children.length; ++i)
+            for (var i = 0; i < node.children.length; ++i)
                 this.objupdate(node.children[i], delta);
         }
 
@@ -501,40 +385,44 @@ namespace m4m.framework
          * 收集场景中有效的相机和光源
          * @param node 节点
          */
-        private collectCameraAndLight(node: transform)
-        {
+        private collectCameraAndLight(node: transform) {
             //update 的时候只收集摄像机和灯光信息
             //收集摄像机
             var c = node.gameObject.camera;
-            if (c != null && c.gameObject.visibleInScene)
-            {
+            if (c != null && c.gameObject.visibleInScene) {
                 this.renderCameras.push(c);
             }
             var cl = this.renderCameras.length;
-            while (this.renderContext.length < cl)
-            {
+            while (this.renderContext.length < cl) {
                 this.renderContext.push(new renderContext(this.webgl));
             }
             //收集灯光
             var l = node.gameObject.light;
-            if (l != null && node.gameObject.visible)
-            {
+            if (l != null && node.gameObject.visible) {
                 this.renderLights.push(l);
             }
+        }
+
+        /**
+         * 获取 渲染灯光
+         * @returns 渲染光源列表
+         */
+        public getRenderLights() {
+            return this.renderLights;
         }
 
         /**
          * 添加灯光到场景中（autoCollectlightCamera : false 时  有效 ）
          * @param l 灯光组件
          */
-        addLight(l : light){
-            if(this.renderLights.indexOf(l) != -1) return;
+        addLight(l: light) {
+            if (this.renderLights.indexOf(l) != -1) return;
             this.renderLights.push(l);
         }
         /**
          * 清除场景中添加过的灯光 （autoCollectlightCamera : false 时  有效 ）
         */
-        clearLights(){
+        clearLights() {
             this.renderLights.length = 0;
         }
 
@@ -542,15 +430,15 @@ namespace m4m.framework
          * 添加相机到场景中（autoCollectlightCamera : false 时  有效 ）
          * @param l 灯光组件
          */
-        addCamera(cam : camera){
-            if(this.renderCameras.indexOf(cam) != -1) return;
+        addCamera(cam: camera) {
+            if (this.renderCameras.indexOf(cam) != -1) return;
             this.renderCameras.push(cam);
             this.renderContext.push(new renderContext(this.webgl));
         }
         /**
          * 清除场景中添加过的相机 （autoCollectlightCamera : false 时 有效 ）
         */
-        clearCameras(){
+        clearCameras() {
             this.renderCameras.length = 0;
             this.renderContext.length = 0;
         }
@@ -563,8 +451,7 @@ namespace m4m.framework
          * @param node 要添加的transform
          * @version m4m 1.0
          */
-        addChild(node: transform)
-        {
+        addChild(node: transform) {
             this.rootNode.addChild(node);
         }
 
@@ -576,8 +463,7 @@ namespace m4m.framework
          * @param node 要移出的transform
          * @version m4m 1.0
          */
-        removeChild(node: transform)
-        {
+        removeChild(node: transform) {
             this.rootNode.removeChild(node);
         }
 
@@ -588,8 +474,7 @@ namespace m4m.framework
          * 获取children列表
          * @version m4m 1.0
          */
-        getChildren(): transform[]
-        {
+        getChildren(): transform[] {
             return this.rootNode.children;
         }
 
@@ -600,8 +485,7 @@ namespace m4m.framework
          * 获取children数量
          * @version m4m 1.0
          */
-        getChildCount(): number
-        {
+        getChildCount(): number {
             if (this.rootNode.children == null) return 0;
             return this.rootNode.children.length;
         }
@@ -614,8 +498,7 @@ namespace m4m.framework
          * @param index 索引
          * @version m4m 1.0
          */
-        getChild(index: number): transform
-        {
+        getChild(index: number): transform {
             return this.rootNode.children[index];
         }
 
@@ -627,8 +510,7 @@ namespace m4m.framework
          * @param name
          * @version m4m 1.0
          */
-        getChildByName(name: string): transform
-        {
+        getChildByName(name: string): transform {
             let res = this.rootNode.find(name);
             return res;
         }
@@ -640,8 +522,7 @@ namespace m4m.framework
          * 获取场景根节点
          * @version m4m 1.0
          */
-        getRoot()
-        {
+        getRoot() {
             return this.rootNode;
         }
 
@@ -654,8 +535,7 @@ namespace m4m.framework
          * @param isPickMesh 是否为拾取mesh 否为拾取collider
          * @version m4m 1.0
          */
-        public pickAll(ray: ray, outInfos: pickinfo[], isPickMesh: boolean = false, root: transform = this.getRoot(), layermask: number = NaN): boolean
-        {
+        public pickAll(ray: ray, outInfos: pickinfo[], isPickMesh: boolean = false, root: transform = this.getRoot(), layermask: number = NaN): boolean {
             if (!outInfos || !ray) return false;
             let isHited = this.doPick(ray, true, isPickMesh, root, outInfos, layermask);
             return isHited;
@@ -670,8 +550,7 @@ namespace m4m.framework
          * @param isPickMesh 是否为拾取mesh 否为拾取collider
          * @version m4m 1.0
          */
-        public pick(ray: ray, outInfo: pickinfo, isPickMesh: boolean = false, root: transform = this.getRoot(), layermask: number = NaN): boolean
-        {
+        public pick(ray: ray, outInfo: pickinfo, isPickMesh: boolean = false, root: transform = this.getRoot(), layermask: number = NaN): boolean {
             if (!outInfo || !ray) return false;
             let isHited = this.doPick(ray, false, isPickMesh, root, outInfo, layermask);
             return isHited;
@@ -690,41 +569,33 @@ namespace m4m.framework
          * @param layermask 层级遮罩选项
          * @returns 是拾取到了？
          */
-        private doPick(ray: ray, pickall: boolean, isPickMesh: boolean, root: transform, out: any, layermask: number = NaN): boolean
-        {
+        private doPick(ray: ray, pickall: boolean, isPickMesh: boolean, root: transform, out: any, layermask: number = NaN): boolean {
             let ishited = false;
             var pickedList: Array<pickinfo> = new Array<pickinfo>();
-            if (isPickMesh)
-            {
+            if (isPickMesh) {
                 ishited = this.pickMesh(ray, root, pickedList, layermask);
             }
-            else
-            {
+            else {
                 ishited = this.pickCollider(ray, root, pickedList, layermask);
             }
 
             if (pickedList.length == 0) return ishited;
 
-            if (pickall)
-            {
+            if (pickall) {
                 out.length = 0;
-                pickedList.forEach(element =>
-                {
+                pickedList.forEach(element => {
                     out.push(element);
                 });
             }
-            else
-            {
+            else {
                 var index = 0;
-                for (var i = 1; i < pickedList.length; i++)
-                {
+                for (var i = 1; i < pickedList.length; i++) {
                     if (pickedList[i].distance < pickedList[index].distance) index = i;
                 }
                 //return pickedList[index];
                 let temp = pickedList.splice(index, 1);
                 (out as pickinfo).cloneFrom(temp[0]);
-                pickedList.forEach(element =>
-                {
+                pickedList.forEach(element => {
                     math.pool.delete_pickInfo(element);
                 });
                 pickedList.length = 0;
@@ -741,44 +612,35 @@ namespace m4m.framework
          * @param layermask 层级遮罩选项
          * @returns 是拾取到了？
          */
-        private pickMesh(ray: ray, tran: transform, pickedList: pickinfo[], layermask: number = NaN): boolean
-        {
+        private pickMesh(ray: ray, tran: transform, pickedList: pickinfo[], layermask: number = NaN): boolean {
             let ishited = false;
-            if (tran.gameObject != null)
-            {
+            if (tran.gameObject != null) {
                 if (!tran.gameObject.visible) return ishited;
                 let canDo = true;
                 //if(!isNaN(layermask) && layermask != tran.gameObject.layer) canDo = false;
                 if (!isNaN(layermask) && (layermask & (1 << tran.gameObject.layer)) == 0) canDo = false;
-                if (canDo)
-                {
+                if (canDo) {
                     var meshFilter = tran.gameObject.getComponent("meshFilter") as m4m.framework.meshFilter;
-                    if (meshFilter != null)
-                    {
+                    if (meshFilter != null) {
                         //3d normal mesh
                         var mesh = meshFilter.getMeshOutput();
-                        if (mesh)
-                        {
+                        if (mesh) {
                             let pinfo = math.pool.new_pickInfo();
                             let bool = mesh.intersects(ray, tran.getWorldMatrix(), pinfo);
-                            if (bool)
-                            {
+                            if (bool) {
                                 ishited = true;
                                 pickedList.push(pinfo);
                                 pinfo.pickedtran = tran;
                             }
                         }
                     }
-                    else
-                    {
+                    else {
                         var skinmesh = tran.gameObject.getComponent("skinnedMeshRenderer") as m4m.framework.skinnedMeshRenderer;
-                        if (skinmesh != null)
-                        {
+                        if (skinmesh != null) {
                             //3d skinmesh
                             let pinfo = math.pool.new_pickInfo();
                             var bool = skinmesh.intersects(ray, pinfo);
-                            if (bool)
-                            {
+                            if (bool) {
                                 ishited = true;
                                 pickedList.push(pinfo);
                                 pinfo.pickedtran = tran;
@@ -788,10 +650,8 @@ namespace m4m.framework
                     }
                 }
             }
-            if (tran.children != null)
-            {
-                for (var i = 0; i < tran.children.length; i++)
-                {
+            if (tran.children != null) {
+                for (var i = 0; i < tran.children.length; i++) {
                     let bool = this.pickMesh(ray, tran.children[i], pickedList, layermask);
                     if (!ishited)
                         ishited = bool;
@@ -808,24 +668,19 @@ namespace m4m.framework
          * @param layermask 层级遮罩选项
          * @returns 是拾取到了？
          */
-        private pickCollider(ray: ray, tran: transform, pickedList: Array<pickinfo>, layermask: number = NaN): boolean
-        {
+        private pickCollider(ray: ray, tran: transform, pickedList: Array<pickinfo>, layermask: number = NaN): boolean {
             let ishited = false;
-            if (tran.gameObject != null)
-            {
+            if (tran.gameObject != null) {
                 if (!tran.gameObject.visible) return ishited;
-                if (tran.gameObject.collider != null)
-                {
+                if (tran.gameObject.collider != null) {
                     let canDo = true;
                     if (!isNaN(layermask) && (layermask & (1 << tran.gameObject.layer)) == 0) canDo = false;
                     //console.error(`${tran.gameObject.layer}  --  ${layermask}`);
-                    if (canDo)
-                    {
+                    if (canDo) {
                         //挂了collider
                         let pinfo = math.pool.new_pickInfo();
                         var bool = ray.intersectCollider(tran, pinfo);
-                        if (bool)
-                        {
+                        if (bool) {
                             ishited = true;
                             pickedList.push(pinfo);
                             pinfo.pickedtran = tran;
@@ -833,10 +688,8 @@ namespace m4m.framework
                     }
                 }
             }
-            if (tran.children != null)
-            {
-                for (var i = 0; i < tran.children.length; i++)
-                {
+            if (tran.children != null) {
+                for (var i = 0; i < tran.children.length; i++) {
                     let bool = this.pickCollider(ray, tran.children[i], pickedList, layermask);
                     if (!ishited)
                         ishited = bool;
@@ -854,21 +707,17 @@ namespace m4m.framework
          * @param plugin 定义场景物理世界引擎插件
          * @version m4m 1.0
          */
-        enablePhysics(gravity: math.vector3, plugin?: IPhysicsEnginePlugin)
-        {
-            if (physics)
-            {
+        enablePhysics(gravity: math.vector3, plugin?: IPhysicsEnginePlugin) {
+            if (physics) {
                 return true;
             }
 
             if (!plugin) plugin = new OimoJSPlugin();
 
-            try
-            {
+            try {
                 physics = new PhysicsEngine(gravity, plugin);
                 return true;
-            } catch (e)
-            {
+            } catch (e) {
                 // console.error(e.message);
                 throw e;
                 return false;
@@ -883,19 +732,15 @@ namespace m4m.framework
          * @param physicOption 物理选项
          * @returns 启用成功？
          */
-        enable2DPhysics(gravity: math.vector2, physicOption: IEngine2DOP = null)
-        {
-            if (physics2D)
-            {
+        enable2DPhysics(gravity: math.vector2, physicOption: IEngine2DOP = null) {
+            if (physics2D) {
                 return true;
             }
-            try
-            {
+            try {
                 physics2D = new physicEngine2D(physicOption);
                 physics2D.setGravity(gravity.x, gravity.y);
                 return true;
-            } catch (e)
-            {
+            } catch (e) {
                 // console.error(e.message);
                 throw e;
                 return false;
@@ -907,12 +752,12 @@ namespace m4m.framework
          * 被 batcher 条件[isStatic= true , visible = true , needGpuInstancBatcher = true , isGpuInstancing() = true]
          * @param rootNode 指定刷新节点（默认为 场景根节点）
          */
-        refreshGpuInstancBatcher(rootNode?: m4m.framework.transform){
+        refreshGpuInstancBatcher(rootNode?: m4m.framework.transform) {
             //清理历史 缓存
             this.renderList.clearBatcher();
             //遍历所有 渲染对象，有标记的（静态 && gpuInstancingTag ）加到batcher列表
-            if(!rootNode) rootNode = this.rootNode;
-            this.fillGpuInsBatcher(rootNode , rootNode.gameObject.isStatic);
+            if (!rootNode) rootNode = this.rootNode;
+            this.fillGpuInsBatcher(rootNode, rootNode.gameObject.isStatic);
         }
 
         /**
@@ -920,21 +765,21 @@ namespace m4m.framework
          * @param node 节点
          * @param isStatic 是静态？
          */
-        private fillGpuInsBatcher(node : m4m.framework.transform , isStatic : boolean){
-            if(!this.webgl.drawArraysInstanced)return;
+        private fillGpuInsBatcher(node: m4m.framework.transform, isStatic: boolean) {
+            if (!this.webgl.drawArraysInstanced) return;
             //检查渲染对象
             let go = node.gameObject;
             isStatic = isStatic || go.isStatic;
             if (!go || !go.visible || (node.hasRendererComp == false && node.hasRendererCompChild == false)) return;  //自己没有渲染组件 且 子物体也没有 return
             let renderer = go.renderer;
-            if(renderer){
-                this.renderList.addStaticInstanceRenderer( renderer as IRendererGpuIns , this.webgl , isStatic);
+            if (renderer) {
+                this.renderList.addStaticInstanceRenderer(renderer as IRendererGpuIns, this.webgl, isStatic);
             }
 
             let children = node.children;
-            if(children){
-                for(let i=0 , len = children.length; i < len ;i++){
-                    this.fillGpuInsBatcher(children[i] , isStatic);
+            if (children) {
+                for (let i = 0, len = children.length; i < len; i++) {
+                    this.fillGpuInsBatcher(children[i], isStatic);
                 }
             }
         }

@@ -14,13 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-﻿namespace m4m.render
-{
+namespace m4m.render {
     /**
      * @private
      */
-    export enum ShowFaceStateEnum
-    {
+    export enum ShowFaceStateEnum {
         ALL,
         CCW,
         CW,
@@ -28,8 +26,7 @@ limitations under the License.
     /**
      * @private
      */
-    export enum DrawModeEnum
-    {
+    export enum DrawModeEnum {
         VboTri,
         VboLine,
         EboTri,
@@ -38,8 +35,7 @@ limitations under the License.
     /**
      * @private
      */
-    export enum BlendModeEnum
-    {
+    export enum BlendModeEnum {
         Close,
         Blend,
         Blend_PreMultiply,
@@ -50,15 +46,14 @@ limitations under the License.
     /**
      * @private
      */
-    export class glDrawPass
-    {
+    export class glDrawPass {
         id: framework.resID = new framework.resID();
-        static lastShowFace: number=-1;
-        static lastZWrite: boolean=null;
-        static lastZTest: boolean=null;
-        static lastZTestMethod: number=-1;
-        static lastBlend: boolean=null;
-        static lastBlendMode:BlendModeEnum=null;
+        static lastShowFace: number = -1;
+        static lastZWrite: boolean = null;
+        static lastZTest: boolean = null;
+        static lastZTestMethod: number = -1;
+        static lastBlend: boolean = null;
+        static lastBlendMode: BlendModeEnum = null;
         //static lastBlendEquation: number=-1;
         //static lastBlendVal: string;
         //static lastState: string = "";
@@ -69,7 +64,7 @@ limitations under the License.
         state_ztest: boolean = false;
         state_ztest_method: number = webglkit.LEQUAL;
         state_blend: boolean = false;
-        state_blendMode:BlendModeEnum;
+        state_blendMode: BlendModeEnum;
         state_blendEquation: number = 0;
         state_blendSrcRGB: number = 0;
         state_blendDestRGB: number = 0;
@@ -84,21 +79,18 @@ limitations under the License.
          * @param program 引擎着色器 program
          * @param uniformDefault 默认uniform？[已弃用]
          */
-        setProgram(program: glProgram, uniformDefault: boolean = false)
-        {
+        setProgram(program: glProgram, uniformDefault: boolean = false) {
             this.program = program;
-            this.mapuniforms=program.mapUniform;
+            this.mapuniforms = program.mapUniform;
         }
 
         /**
          * 设置半透混合模式
          * @param mode 半透混合模式
          */
-        setAlphaBlend(mode: BlendModeEnum)
-        {
-            this.state_blendMode=mode;
-            if (mode == BlendModeEnum.Add)
-            {
+        setAlphaBlend(mode: BlendModeEnum) {
+            this.state_blendMode = mode;
+            if (mode == BlendModeEnum.Add) {
                 this.state_blend = true;
                 this.state_blendEquation = webglkit.FUNC_ADD;
                 this.state_blendSrcRGB = webglkit.SRC_ALPHA;
@@ -106,8 +98,7 @@ limitations under the License.
                 this.state_blendSrcAlpha = webglkit.SRC_ALPHA;
                 this.state_blendDestALpha = webglkit.ONE;
             }
-            else if (mode == BlendModeEnum.Add_PreMultiply)
-            {
+            else if (mode == BlendModeEnum.Add_PreMultiply) {
                 this.state_blend = true;
                 this.state_blendEquation = webglkit.FUNC_ADD;
                 this.state_blendSrcRGB = webglkit.ONE;
@@ -115,8 +106,7 @@ limitations under the License.
                 this.state_blendSrcAlpha = webglkit.SRC_ALPHA;
                 this.state_blendDestALpha = webglkit.ONE;
             }
-            else if (mode == BlendModeEnum.Blend)
-            {
+            else if (mode == BlendModeEnum.Blend) {
                 this.state_blend = true;
                 this.state_blendEquation = webglkit.FUNC_ADD;
                 this.state_blendSrcRGB = webglkit.SRC_ALPHA;
@@ -124,8 +114,7 @@ limitations under the License.
                 this.state_blendSrcAlpha = webglkit.SRC_ALPHA;
                 this.state_blendDestALpha = webglkit.ONE;
             }
-            else if (mode == BlendModeEnum.Blend_PreMultiply)
-            {
+            else if (mode == BlendModeEnum.Blend_PreMultiply) {
                 this.state_blend = true;
                 this.state_blendEquation = webglkit.FUNC_ADD;
                 this.state_blendSrcRGB = webglkit.ONE;
@@ -134,8 +123,7 @@ limitations under the License.
                 this.state_blendDestALpha = webglkit.ONE;
 
             }
-            else if (mode == BlendModeEnum.Close)
-            {
+            else if (mode == BlendModeEnum.Close) {
                 this.state_blend = false;
             }
         }
@@ -147,7 +135,7 @@ limitations under the License.
         // //设置uniform save起来
         // uniformFloat(name: string, number: number)
         // {
-            
+
         //     // var v = this.uniforms[name];
         //     // if (v == null) throw new Error("do not have this uniform");
         //     // if (v.type != UniformTypeEnum.Float) throw new Error("wrong uniform type:" + v.type);
@@ -221,33 +209,38 @@ limitations under the License.
         /**
          * 因为ui那边会改变state，所以每次开始渲染场景先将laststatereset。
          */
-        static resetLastState()
-        {
-            this.lastShowFace=-1;
-            this.lastZWrite=null;
-            this.lastZTest=null;
-            this.lastZTestMethod=-1;
-            this.lastBlend=null;
-            this.lastBlendMode=null;
+        static resetLastState() {
+            this.lastShowFace = -1;
+            this.lastZWrite = null;
+            this.lastZTest = null;
+            this.lastZTestMethod = -1;
+            this.lastBlend = null;
+            this.lastBlendMode = null;
         }
 
         private static useStateMap = {
 
-        } 
+        }
 
         private static lastPassID = -1;
+
+        /**
+         * 重置缓存ID
+         */
+        public static resetCacheID() {
+            this.lastPassID = -1;
+        }
 
         /**
          * 使用pass
          * @param webgl webgl上下文
          * @returns 
          */
-        use(webgl: WebGL2RenderingContext)
-        {
-            let ID = this.id.getID(); 
+        use(webgl: WebGL2RenderingContext) {
+            let ID = this.id.getID();
             let lastSame = glDrawPass.lastPassID == ID;
             glDrawPass.lastPassID = ID;
-            if(lastSame) return;
+            if (lastSame) return;
 
             // if (this.state_showface == ShowFaceStateEnum.ALL)
             // {
@@ -296,75 +289,59 @@ limitations under the License.
             // {
             //     webgl.disable(webgl.BLEND);
             // }
-            if(this.state_showface!=glDrawPass.lastShowFace)
-            {
-                glDrawPass.lastShowFace=this.state_showface;
-                if (this.state_showface == ShowFaceStateEnum.ALL)
-                {
+            if (this.state_showface != glDrawPass.lastShowFace) {
+                glDrawPass.lastShowFace = this.state_showface;
+                if (this.state_showface == ShowFaceStateEnum.ALL) {
                     webgl.disable(webgl.CULL_FACE);
                 }
-                else
-                {
-                    if (this.state_showface == ShowFaceStateEnum.CCW)
-                    {
+                else {
+                    if (this.state_showface == ShowFaceStateEnum.CCW) {
                         webgl.frontFace(webgl.CCW);
                     }
-                    else
-                    {
+                    else {
                         webgl.frontFace(webgl.CW);
                     }
                     webgl.cullFace(webgl.BACK);
                     webgl.enable(webgl.CULL_FACE);
                 }
             }
-            if(this.state_zwrite!=glDrawPass.lastZWrite)
-            {
-                glDrawPass.lastZWrite=this.state_zwrite;
-                if (this.state_zwrite)
-                {
+            if (this.state_zwrite != glDrawPass.lastZWrite) {
+                glDrawPass.lastZWrite = this.state_zwrite;
+                if (this.state_zwrite) {
                     webgl.depthMask(true);
                 }
-                else
-                {
+                else {
                     webgl.depthMask(false);
                 }
             }
-            if(this.state_ztest!=glDrawPass.lastZTest)
-            {
-                glDrawPass.lastZTest=this.state_ztest;
-                if (this.state_ztest)
-                {
+            if (this.state_ztest != glDrawPass.lastZTest) {
+                glDrawPass.lastZTest = this.state_ztest;
+                if (this.state_ztest) {
                     webgl.enable(webgl.DEPTH_TEST);
                 }
-                else
-                {
+                else {
                     webgl.disable(webgl.DEPTH_TEST);
                 }
             }
-            if(this.state_ztest&&glDrawPass.lastZTestMethod!=this.state_ztest_method)
-            {
-                glDrawPass.lastZTestMethod=this.state_ztest_method;
+            if (this.state_ztest && glDrawPass.lastZTestMethod != this.state_ztest_method) {
+                glDrawPass.lastZTestMethod = this.state_ztest_method;
                 webgl.depthFunc(this.state_ztest_method);
             }
-            if(this.state_blend!=glDrawPass.lastBlend)
-            {
-                glDrawPass.lastBlend=this.state_blend;
-                if (this.state_blend)
-                {
+            if (this.state_blend != glDrawPass.lastBlend) {
+                glDrawPass.lastBlend = this.state_blend;
+                if (this.state_blend) {
                     webgl.enable(webgl.BLEND);
                 }
-                else
-                {
+                else {
                     webgl.disable(webgl.BLEND);
                 }
             }
-            if(this.state_blend&&glDrawPass.lastBlendMode!=this.state_blendMode)
-            {
-                glDrawPass.lastBlendMode=this.state_blendMode;
+            if (this.state_blend && glDrawPass.lastBlendMode != this.state_blendMode) {
+                glDrawPass.lastBlendMode = this.state_blendMode;
                 webgl.blendEquation(this.state_blendEquation);
                 //this.webgl.blendFunc(this.webgl.ONE, this.webgl.ONE_MINUS_SRC_ALPHA);
                 webgl.blendFuncSeparate(this.state_blendSrcRGB, this.state_blendDestRGB,
-                this.state_blendSrcAlpha, this.state_blendDestALpha);
+                    this.state_blendSrcAlpha, this.state_blendDestALpha);
             }
             //use program
             this.program.use(webgl);

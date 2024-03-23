@@ -750,6 +750,13 @@ namespace m4m.framework {
         private static lastDrawMeshID = -1;
 
         /**
+         * 重置缓存 ID
+         */
+        public static resetCacheID() {
+            this.lastDrawMatID = this.lastDrawMeshID = -1;
+        }
+
+        /**
          * @public
          * @language zh_CN
          * @classdesc
