@@ -497,10 +497,10 @@ namespace m4m.framework {
             // {
             //     var sh = new shader("shader/test");
             //     sh.defaultAsset = true;
-            //     sh.passes["base"] = [];
+            //     sh.passes[render.SHADER_PASS_BASE] = [];
             //     var p = new render.glDrawPass();
             //     p.setProgram(program_test);
-            //     sh.passes["base"].push(p);
+            //     sh.passes[render.SHADER_PASS_BASE].push(p);
             //     sh.fillUnDefUniform(p);
             //     //sh._parseProperties(assetmgr,JSON.parse(this.shader0).properties);
             //     p.state_ztest = true;
@@ -515,10 +515,10 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/def");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
                 p.setProgram(program);
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh.fillUnDefUniform(p);
                 //sh._parseProperties(assetmgr,JSON.parse(this.shader0).properties);
                 p.state_ztest = true;
@@ -532,10 +532,10 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/def3dbeforeui");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
                 p.setProgram(programdiffuse);
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh.fillUnDefUniform(p);
                 //sh._parseProperties(assetmgr,JSON.parse(this.diffuseShader).properties);
                 p.state_ztest = false;
@@ -549,10 +549,10 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/def2");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
                 p.setProgram(program2);
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh.fillUnDefUniform(p);
                 //sh._parseProperties(assetmgr,JSON.parse(this.uishader).properties);
                 p.state_showface = render.ShowFaceStateEnum.ALL;
@@ -564,10 +564,10 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/defui");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
                 p.setProgram(program2);
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh.fillUnDefUniform(p);
                 sh._parseProperties(assetmgr, JSON.parse(this.uishader).properties);
                 p.state_showface = render.ShowFaceStateEnum.ALL;
@@ -580,10 +580,10 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/defuifont");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
                 p.setProgram(programuifont);
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh.fillUnDefUniform(p);
                 // sh._parseProperties(assetmgr, JSON.parse(this.shaderuifront).properties);
                 p.state_showface = render.ShowFaceStateEnum.ALL;
@@ -596,9 +596,9 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/line");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 p.setProgram(programline);
                 sh.fillUnDefUniform(p);
                 p.state_ztest = true;
@@ -611,9 +611,9 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/materialcolor");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 //sh._parseProperties(assetmgr,JSON.parse(this.materialShader).properties);
                 p.setProgram(programmaterialcolor);
                 sh.fillUnDefUniform(p);
@@ -628,9 +628,9 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/defmaskui");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh._parseProperties(assetmgr, JSON.parse(this.uishader).properties);
                 p.setProgram(programMaskUI);
                 sh.fillUnDefUniform(p);
@@ -644,9 +644,9 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/defmaskfont");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh._parseProperties(assetmgr, JSON.parse(this.shaderuifront).properties);
                 p.setProgram(programMaskfont);
                 sh.fillUnDefUniform(p);
@@ -661,9 +661,9 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/deflinetrail");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh._parseProperties(assetmgr, JSON.parse(this.linetrailShader).properties);
                 p.setProgram(programlinetrail);
                 sh.fillUnDefUniform(p);
@@ -678,9 +678,9 @@ namespace m4m.framework {
             {
                 var sh = new shader("shader/ulit");
                 sh.defaultAsset = true;
-                sh.passes["base"] = [];
+                sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
-                sh.passes["base"].push(p);
+                sh.passes[render.SHADER_PASS_BASE].push(p);
                 p.setProgram(programdiffuse);
                 sh.fillUnDefUniform(p);
                 p.state_ztest = true;

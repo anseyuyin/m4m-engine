@@ -34,14 +34,15 @@ namespace m4m.render {
             }
 
             this.RealCameraNumber = 0;
-            var len = scene.renderCameras.length;
-            for (var i = 0; i < len; i++) {
+            let len = scene.renderCameras.length;
+            //遍历相机 执行渲染
+            for (let i = 0; i < len; i++) {
                 render.glDrawPass.resetLastState();
                 if (i == len - 1) {
                     scene.renderCameras[i].isLastCamera = true;
                 }
                 if (scene.app.beRendering) {
-                    this._renderCamera(i);
+                    this.renderCamera(i);
                 }
                 scene.renderCameras[i].isLastCamera = false;
             }
@@ -71,37 +72,49 @@ namespace m4m.render {
          * 这个函数后面还有别的过程，应该留给camera
          * @param camindex 相机索引
          */
-        private _renderCamera(camindex: number) {
-            var scene = this._renderScene;
-            var app = scene.app;
-            var assetmgr = app.getAssetMgr();
+        private renderCamera(camindex: number) {
+            let scene = this._renderScene;
+            let app = scene.app;
+            let assetmgr = app.getAssetMgr();
             //增加当前编辑器状态，管控场编相机
             //一个camera 不是一次单纯的绘制，camera 还有多个绘制遍
-            var cam = scene.renderCameras[camindex];
-            var context = scene.renderContext[camindex];
+            let cam = scene.renderCameras[camindex];
+            let context = scene.renderContext[camindex];
             context.fog = scene.fog;
+            let needRender = false;
+            let needRenderOverLay = false;
             if ((app.bePlay && !cam.isEditorCam) || (!app.bePlay && cam.isEditorCam)) {
+                needRender = true;
+                needRenderOverLay = true;
+            }
+            if (!app.bePlay && app.be2dstate && camindex == app.curcameraindex) {
+                needRenderOverLay = true;
+            }
+
+            //渲染场景
+            if (needRender) {
+                this.RealCameraNumber++;
                 context.updateCamera(app, cam);
                 context.updateLights(scene.getRenderLights());
                 cam.fillRenderer(scene);
-                cam.renderScene(scene, context, camindex);
-                this.RealCameraNumber++;
 
-                // //还有overlay
+                //阴影投射节点收集
+
+                //深度纹理
+
+                //渲染阴影
+
+                //执行渲染场景
+                cam.renderScene(scene, context, camindex);
+
+            }
+
+            //overlay 的渲染
+            if (needRenderOverLay) {
                 let overLays: framework.IOverLay[] = cam.getOverLays();
-                for (var i = 0; i < overLays.length; i++) {
+                for (let i = 0; i < overLays.length; i++) {
                     if (cam.CullingMask & framework.CullingMask.ui) {
                         overLays[i].render(context, assetmgr, cam);
-                    }
-                }
-            }
-            if (!app.bePlay && app.be2dstate) {
-                if (camindex == app.curcameraindex) {
-                    let overLays: framework.IOverLay[] = cam.getOverLays();
-                    for (var i = 0; i < overLays.length; i++) {
-                        if (cam.CullingMask & framework.CullingMask.ui) {
-                            overLays[i].render(context, assetmgr, cam);
-                        }
                     }
                 }
             }
@@ -111,9 +124,9 @@ namespace m4m.render {
         * 渲染场景 2dUI overlay
         */
         private rendererSceneOverLay() {
-            var scene = this._renderScene;
-            var app = scene.app;
-            var assetmgr = app.getAssetMgr();
+            let scene = this._renderScene;
+            let app = scene.app;
+            let assetmgr = app.getAssetMgr();
 
             let ol2ds = scene.getScreenSpaceOverlays();
             if (!ol2ds || ol2ds.length < 1) return;
@@ -125,7 +138,7 @@ namespace m4m.render {
             if (mainCamIdx == -1) {
                 let cname = targetcamera.gameObject.getName();
                 let oktag = false;
-                for (var i = 0, l = rCams.length; i < l; i++) {
+                for (let i = 0, l = rCams.length; i < l; i++) {
                     let cam = rCams[i];
                     if (cam && cam.gameObject.getName() == cname) {
                         targetcamera = scene.mainCamera = cam;
@@ -142,8 +155,8 @@ namespace m4m.render {
             mainCamIdx = rCams.indexOf(targetcamera);
             if (!targetcamera) return;
             let len = ol2ds.length;
-            for (var i = 0, l = len; i < l; ++i) {
-                var overlay = ol2ds[i];
+            for (let i = 0, l = len; i < l; ++i) {
+                let overlay = ol2ds[i];
                 if (overlay && app && app.beRendering) {
                     overlay.render(scene.renderContext[mainCamIdx], assetmgr, targetcamera);
                 }

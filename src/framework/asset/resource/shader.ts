@@ -162,7 +162,7 @@ namespace m4m.framework
 
             if (json.layer)
             {
-                var layer = json.layer;
+                let layer = json.layer;
                 if (layer == "transparent")
                     this.layer = RenderLayerEnum.Transparent;
                 else if (layer == "overlay")
@@ -174,37 +174,40 @@ namespace m4m.framework
             // {
             //     this.queue = json.queue;
             // }
-            var passes = json.passes;
+            let passes = json.passes;
             this.passes = {};
-            for (var key in passes)
+            for (let key in passes)
             {
-                var passbass = passes[key];
-                var curpasses: render.glDrawPass[];
+                let passbass = passes[key];
+                let curpasses: render.glDrawPass[];
+
+                let isValidPass = render.ALL_VALID_PASS[key];
+                if(!isValidPass) continue;
 
                 //限制一下pass的名字
-                if (key == "base" || key == "instance" || key == "lightmap" || key == "skin" || key == "quad")
-                {
+                // if (key == render.SHADER_PASS_BASE || key == render.SHADER_PASS_INSTANCE || key == render.SHADER_PASS_LIGHTMAP || key == render.SHADER_PASS_SKIN || key == render.SHADER_PASS_QUAD)
+                // {
 
-                }
-                else if (key.indexOf("base_") == 0 || key.indexOf("instance_") == 0 || key.indexOf("lightmap_") == 0 || key.indexOf("skin_") == 0)
-                {
+                // }
+                // else if (key.indexOf("base_") == 0 || key.indexOf("instance_") == 0 || key.indexOf("lightmap_") == 0 || key.indexOf("skin_") == 0)
+                // {
 
-                }
-                else
-                {
-                    continue;
-                }
+                // }
+                // else
+                // {
+                //     continue;
+                // }
                 this.passes[key] = [];
                 for (var i = 0; i < passbass.length; i++)
                 {
                     this.passes[key].push(this._parsePass(assetmgr, passbass[i],key));
                 }
             }
-            if (this.passes["base"] == undefined)
+            if (this.passes[render.SHADER_PASS_BASE] == undefined)
             {
                 throw new Error("do not have base passgroup.");
             }
-            this.fillUnDefUniform(this.passes["base"][0]);
+            this.fillUnDefUniform(this.passes[render.SHADER_PASS_BASE][0]);
         }
 
         /**

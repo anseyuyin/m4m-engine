@@ -500,10 +500,10 @@ namespace m4m.framework
                     if (this.gameObject.getScene().fog)
                     {
                         // context.fog = this.gameObject.getScene().fog;
-                        subEffectBatcher.mat.draw(context, mesh, mesh.submesh[0], "base_fog");//只有一个submesh
+                        subEffectBatcher.mat.draw(context, mesh, mesh.submesh[0], render.SHADER_PASS_BASE_FOG);//只有一个submesh
                     } else
                     {
-                        subEffectBatcher.mat.draw(context, mesh, mesh.submesh[0], "base");//只有一个submesh
+                        subEffectBatcher.mat.draw(context, mesh, mesh.submesh[0], render.SHADER_PASS_BASE);//只有一个submesh
                     }
                 }
                 if (this.particles != undefined)

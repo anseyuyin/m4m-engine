@@ -225,9 +225,9 @@ namespace m4m.framework {
 
                             if (this.gameObject.transform.scene.fog) {
                                 // context.fog = this.gameObject.transform.scene.fog;
-                                usemat.draw(context, this._mesh, sm, "skin_fog");
+                                usemat.draw(context, this._mesh, sm, render.SHADER_PASS_SKIN_FOG);
                             } else {
-                                usemat.draw(context, this._mesh, sm, "skin");
+                                usemat.draw(context, this._mesh, sm, render.SHADER_PASS_SKIN);
                             }
                         }
                     }
@@ -339,7 +339,7 @@ namespace m4m.framework {
             mat.setFloat(f4skinnedMeshRenderer.boneSamplerTexelSize, 4 / this.boneMatrices.length);
 
             //处理uniform 同材质去重优化,贴图通道被污染
-            let basetype = this.gameObject.transform.scene.fog ? "skin_fog" : "skin";
+            let basetype = this.gameObject.transform.scene.fog ? render.SHADER_PASS_SKIN_FOG : render.SHADER_PASS_SKIN;
             let drawType = context.drawtype;
             let shader = mat.getShader();
             let drawPasses = shader.passes[basetype + drawType][0];

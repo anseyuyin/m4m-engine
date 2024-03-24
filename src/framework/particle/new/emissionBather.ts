@@ -144,10 +144,10 @@ namespace m4m.framework
             if (assetmgr.app.getScene().fog)
             {
                 // context.fog = assetmgr.app.getScene().fog;
-                this.mat.draw(context, mesh, mesh.submesh[0], "base_fog");
+                this.mat.draw(context, mesh, mesh.submesh[0], render.SHADER_PASS_BASE_FOG);
             } else
             {
-                this.mat.draw(context, mesh, mesh.submesh[0], "base");
+                this.mat.draw(context, mesh, mesh.submesh[0], render.SHADER_PASS_BASE);
             }
         }
         /**

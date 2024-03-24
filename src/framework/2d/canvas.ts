@@ -660,7 +660,7 @@ namespace m4m.framework {
             if (mat != this.lastMat) {
                 this.lastMat = mat;
                 this.batcher.end(this.webgl);
-                let pass = this.lastMat.getShader().passes["base"][0];
+                let pass = this.lastMat.getShader().passes[render.SHADER_PASS_BASE][0];
 
                 //有一些自动参数要传进去
                 //mat.setMatrix("glstate_matrix_mvp", this.context.matrixModelViewProject);
@@ -685,7 +685,7 @@ namespace m4m.framework {
                         this.lastMaskSta = msta.value;
                         math.vec4Clone(rect, this.lastMaskV4);
                         this.batcher.end(this.webgl);
-                        let pass = this.lastMat.getShader().passes["base"][0];
+                        let pass = this.lastMat.getShader().passes[render.SHADER_PASS_BASE][0];
                         //mat.uploadUniform(pass);
                         mat.uploadUnifoms(pass, this.context);
                     }

@@ -382,10 +382,10 @@ namespace m4m.framework {
                 let sm = subMeshs[i];
                 let mid = subMeshs[i].matIndex;//根据这个找到使用的具体哪个材质    
                 let usemat = this.materials[mid];
-                let drawtype = scene.fog ? "base_fog" : "base";
+                let drawtype = scene.fog ? render.SHADER_PASS_BASE_FOG : render.SHADER_PASS_BASE;
                 context.lightmap = null;
                 if (lightIdx >= 0 && scene.lightmaps.length > 0) {
-                    drawtype = scene.fog ? "lightmap_fog" : "lightmap";
+                    drawtype = scene.fog ? render.SHADER_PASS_LIGHTMAP_FOG : render.SHADER_PASS_LIGHTMAP;
                     //usemat.shaderStatus = shaderStatus.Lightmap;
                     if (scene.lightmaps.length > lightIdx) {
                         context.lightmap = scene.lightmaps[lightIdx];
@@ -395,7 +395,7 @@ namespace m4m.framework {
                 }
                 else {
                     if (!this.useGlobalLightMap) {
-                        drawtype = scene.fog ? "lightmap_fog" : "lightmap";
+                        drawtype = scene.fog ? render.SHADER_PASS_LIGHTMAP_FOG : render.SHADER_PASS_LIGHTMAP;
                         context.lightmap = usemat.statedMapUniforms["_LightmapTex"];
                         //if(context.lightmap.getName){}
                         //context.lightmap_01 = meshRenderer.getLightMap_01Img(context.lightmap);
@@ -589,11 +589,11 @@ namespace m4m.framework {
          * @returns 绘制类型标记
          */
         static instanceDrawType() {
-            let drawtype = "instance";
+            let drawtype = render.SHADER_PASS_INSTANCE;
             //fog
             let _fog = m4m.framework.sceneMgr.scene.fog;
             if (_fog) {
-                drawtype = "instance_fog";
+                drawtype = render.SHADER_PASS_INSTANCE_FOG;
             }
             return drawtype;
         }

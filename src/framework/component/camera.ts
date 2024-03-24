@@ -89,7 +89,7 @@ namespace m4m.framework
             //画四边形
             context.drawtype = "";
             // mesh.glMesh.bindVboBuffer(context.webgl);
-            this.material.draw(context, mesh, mesh.submesh[0], "quad");
+            this.material.draw(context, mesh, mesh.submesh[0], render.SHADER_PASS_QUAD);
 
             render.glRenderTarget.useNull(context.webgl);
 
@@ -903,8 +903,9 @@ namespace m4m.framework
         fillRenderer(scene: scene)
         {
             scene.renderList.clear();
-            if (scene.app.isFrustumCulling)
+            if (scene.app.isFrustumCulling){
                 this.calcCameraFrame(scene.app);
+            }
             let fID = scene.app.frameID;
             if (camera.lastFID != fID)
             {

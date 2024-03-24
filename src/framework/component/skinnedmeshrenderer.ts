@@ -442,9 +442,9 @@ namespace m4m.framework {
                         if (usemat != null) {
                             if (this.gameObject.transform.scene.fog) {
                                 // context.fog = this.gameObject.transform.scene.fog;
-                                usemat.draw(context, this._mesh, sm, "skin_fog");
+                                usemat.draw(context, this._mesh, sm, render.SHADER_PASS_SKIN_FOG);
                             } else {
-                                usemat.draw(context, this._mesh, sm, "skin");
+                                usemat.draw(context, this._mesh, sm, render.SHADER_PASS_SKIN);
                             }
                         }
                     }

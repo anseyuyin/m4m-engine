@@ -396,10 +396,10 @@ namespace m4m.framework
             if (this.gameObject.getScene().fog)
             {
                 // context.fog = this.gameObject.getScene().fog;
-                this.material.draw(context, this.mesh, this.mesh.submesh[0], "base_fog");
+                this.material.draw(context, this.mesh, this.mesh.submesh[0], render.SHADER_PASS_BASE_FOG);
             } else
             {
-                this.material.draw(context, this.mesh, this.mesh.submesh[0], "base");
+                this.material.draw(context, this.mesh, this.mesh.submesh[0], render.SHADER_PASS_BASE);
             }
         }
          /**

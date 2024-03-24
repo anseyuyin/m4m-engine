@@ -697,7 +697,7 @@ namespace m4m.framework {
          */
         private getShaderGuid(sh: m4m.framework.shader) {
             if (!sh) return;
-            if (!sh.passes["instance"] && !sh.passes["instance_fog"]) {
+            if (!sh.passes[render.SHADER_PASS_INSTANCE] && !sh.passes[render.SHADER_PASS_INSTANCE_FOG]) {
                 console.warn(`shader ${sh.getName()} , has not "instance" pass when enable gpuInstance on the material ${this.getName()}.`);
             } else {
                 this._shaderGUID = "" + sh.getGUID();
@@ -768,7 +768,7 @@ namespace m4m.framework {
          * @param instanceCount 批量渲染时绘制数量
          * @version m4m 1.0
          */
-        draw(context: renderContext, mesh: mesh, sm: subMeshInfo, basetype: string = "base", drawInstanceInfo: DrawInstanceInfo = undefined) {
+        draw(context: renderContext, mesh: mesh, sm: subMeshInfo, basetype: string = render.SHADER_PASS_BASE, drawInstanceInfo: DrawInstanceInfo = undefined) {
             let matGUID = this.getGUID();
             let meshGUID = mesh.getGUID();
             let LastMatSame = matGUID == material.lastDrawMatID;
@@ -776,10 +776,10 @@ namespace m4m.framework {
 
             let drawPasses = this.shader.passes[basetype + context.drawtype];
             if (drawPasses == undefined) {
-                basetype = basetype.indexOf("fog") != -1 ? "base_fog" : "base";
+                basetype = basetype.indexOf(render.SHADER_PASS_FOG) != -1 ? render.SHADER_PASS_BASE_FOG : render.SHADER_PASS_BASE;
                 drawPasses = this.shader.passes[basetype + context.drawtype];
                 if (drawPasses == undefined) {
-                    drawPasses = this.shader.passes["base" + context.drawtype];
+                    drawPasses = this.shader.passes[render.SHADER_PASS_BASE + context.drawtype];
                     if (drawPasses == undefined)
                         return;
                 }

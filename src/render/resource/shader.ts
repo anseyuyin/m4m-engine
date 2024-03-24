@@ -15,6 +15,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 namespace m4m.render {
+    //----------Shader Pass String Define-------
+    export const SHADER_PASS_BASE = `base`;
+    export const SHADER_PASS_INSTANCE = `instance`;
+    export const SHADER_PASS_SKIN = `skin`;
+    export const SHADER_PASS_SKIN_TEX = `skinTex`;
+    export const SHADER_PASS_LIGHTMAP = `lightmap`;
+    export const SHADER_PASS_SHADOW_CASTER = "shadowCaster";
+    export const SHADER_PASS_DEPTH = "depth";
+    export const SHADER_PASS_QUAD = "quad";
+    export const SHADER_PASS_FOG = "fog";
+    export const SHADER_PASS_BASE_FOG = `${SHADER_PASS_BASE}_${SHADER_PASS_FOG}`;
+    export const SHADER_PASS_INSTANCE_FOG = `${SHADER_PASS_INSTANCE}_${SHADER_PASS_FOG}`;
+    export const SHADER_PASS_SKIN_FOG = `${SHADER_PASS_SKIN}_${SHADER_PASS_FOG}`;
+    export const SHADER_PASS_SKIN_TEX_FOG = `${SHADER_PASS_SKIN_TEX}_${SHADER_PASS_FOG}`;
+    export const SHADER_PASS_LIGHTMAP_FOG = `${SHADER_PASS_LIGHTMAP}_${SHADER_PASS_FOG}`;
+
+    /**
+     * 有效的 pass 定义
+     */
+    export const ALL_VALID_PASS: { [key: string]: boolean } = {
+        [SHADER_PASS_BASE]: true,
+        [SHADER_PASS_INSTANCE]: true,
+        [SHADER_PASS_SKIN]: true,
+        [SHADER_PASS_SKIN_TEX]: true,
+        [SHADER_PASS_LIGHTMAP]: true,
+        [SHADER_PASS_SHADOW_CASTER]: true,
+        [SHADER_PASS_DEPTH]: true,
+        [SHADER_PASS_QUAD]: true,
+        [SHADER_PASS_FOG]: true,
+        [SHADER_PASS_BASE_FOG]: true,
+        [SHADER_PASS_INSTANCE_FOG]: true,
+        [SHADER_PASS_SKIN_FOG]: true,
+        [SHADER_PASS_SKIN_TEX_FOG]: true,
+        [SHADER_PASS_LIGHTMAP_FOG]: true,
+    }
+    //------------------------------------------
+
+
     /**
      * @public
      * @language zh_CN
@@ -409,35 +447,75 @@ namespace m4m.render {
                 fsStr = `#define ${globalMacros[i]}\n${fsStr}`;
             }
 
-            if (type == "base") {
+            // if (type == SHADER_PASS_BASE) {
 
-            } else if (type == "base_fog" || type == "fog") {
-                vsStr = "#define FOG \n" + vsStr;
-                fsStr = "#define FOG \n" + fsStr;
-            } else if (type == "instance") {
-                vsStr = "#define INSTANCE \n" + vsStr;
-                fsStr = "#define INSTANCE \n" + fsStr;
+            // } else if (type == SHADER_PASS_BASE_FOG || type == SHADER_PASS_FOG) {
+            //     vsStr = "#define FOG \n" + vsStr;
+            //     fsStr = "#define FOG \n" + fsStr;
+            // } else if (type == SHADER_PASS_INSTANCE) {
+            //     vsStr = "#define INSTANCE \n" + vsStr;
+            //     fsStr = "#define INSTANCE \n" + fsStr;
+            // }
+            // else if (type == SHADER_PASS_INSTANCE_FOG) {
+            //     vsStr = "#define FOG \n" + "#define INSTANCE \n" + vsStr;
+            //     fsStr = "#define FOG \n" + "#define INSTANCE \n" + fsStr;
+            // }
+            // else if (type == SHADER_PASS_SKIN) {
+            //     vsStr = "#define SKIN \n" + vsStr;
+            //     fsStr = "#define SKIN \n" + fsStr;
+            // } else if (type == SHADER_PASS_SKIN_FOG) {
+            //     vsStr = "#define SKIN \n" + "#define FOG \n" + vsStr;
+            //     fsStr = "#define SKIN \n" + "#define FOG \n" + fsStr;
+            // } else if (type == SHADER_PASS_LIGHTMAP) {
+            //     vsStr = "#define LIGHTMAP \n" + vsStr;
+            //     fsStr = "#define LIGHTMAP \n" + fsStr;
+            // } else if (type == SHADER_PASS_LIGHTMAP_FOG) {
+            //     vsStr = "#define LIGHTMAP \n" + "#define FOG \n" + vsStr;
+            //     fsStr = "#define LIGHTMAP \n" + "#define FOG \n" + fsStr;
+            // } else if (type == SHADER_PASS_QUAD) {
+            //     vsStr = "#define QUAD \n" + vsStr;
+            //     fsStr = "#define QUAD \n" + fsStr;
+            // }
+
+            //附加宏定义
+            let addDefine = "";
+            switch (type) {
+                case SHADER_PASS_BASE:
+
+                    break;
+                case SHADER_PASS_FOG:
+                case SHADER_PASS_BASE_FOG:
+                    addDefine += "#define FOG \n";
+                    break;
+                case SHADER_PASS_INSTANCE:
+                    addDefine += "#define INSTANCE \n";
+                    break;
+                case SHADER_PASS_INSTANCE_FOG:
+                    addDefine += "#define INSTANCE \n";
+                    addDefine += "#define FOG \n";
+                    break;
+                case SHADER_PASS_SKIN:
+                    addDefine += "#define SKIN \n";
+                    break;
+                case SHADER_PASS_SKIN_FOG:
+                    addDefine += "#define SKIN \n";
+                    addDefine += "#define FOG \n";
+                    break;
+                case SHADER_PASS_LIGHTMAP:
+                    addDefine += "#define LIGHTMAP \n";
+                    break;
+                case SHADER_PASS_LIGHTMAP_FOG:
+                    addDefine += "#define LIGHTMAP \n";
+                    addDefine += "#define FOG \n";
+                    break;
+                case SHADER_PASS_QUAD:
+                    addDefine += "#define QUAD \n";
+                    break;
             }
-            else if (type == "instance_fog") {
-                vsStr = "#define FOG \n" + "#define INSTANCE \n" + vsStr;
-                fsStr = "#define FOG \n" + "#define INSTANCE \n" + fsStr;
-            }
-            else if (type == "skin") {
-                vsStr = "#define SKIN \n" + vsStr;
-                fsStr = "#define SKIN \n" + fsStr;
-            } else if (type == "skin_fog") {
-                vsStr = "#define SKIN \n" + "#define FOG \n" + vsStr;
-                fsStr = "#define SKIN \n" + "#define FOG \n" + fsStr;
-            } else if (type == "lightmap") {
-                vsStr = "#define LIGHTMAP \n" + vsStr;
-                fsStr = "#define LIGHTMAP \n" + fsStr;
-            } else if (type == "lightmap_fog") {
-                vsStr = "#define LIGHTMAP \n" + "#define FOG \n" + vsStr;
-                fsStr = "#define LIGHTMAP \n" + "#define FOG \n" + fsStr;
-            } else if (type == "quad") {
-                vsStr = "#define QUAD \n" + vsStr;
-                fsStr = "#define QUAD \n" + fsStr;
-            }
+
+            //添加到着色器
+            vsStr = addDefine + vsStr;
+            fsStr = addDefine + fsStr;
 
             //检查 添加 es300 标记
             if (vsIsES300) { vsStr = es300Tag + vsStr; }
