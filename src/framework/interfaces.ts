@@ -32,10 +32,10 @@ namespace m4m.framework {
         onPlay();
         /** 初始化时调用 */
         start();
-         /**
-         * 每帧调用一次
-         * @param delta 上一帧的消耗时间(单位s)
-         */
+        /**
+        * 每帧调用一次
+        * @param delta 上一帧的消耗时间(单位s)
+        */
         update(delta: number);
         /** 节点对象 */
         gameObject: gameObject;
@@ -134,9 +134,19 @@ namespace m4m.framework {
     }
 
     /**
-     * 
+     * 阴影渲染接口
      */
-    export interface IRendererGpuIns extends IRenderer{
+    export interface IRendererShadows {
+        /**
+         * 阴影铸造选项
+         */
+        castShadows: CastShadowsOption;
+    }
+
+    /**
+     * GPU实例渲染 接口
+     */
+    export interface IRendererGpuIns extends IRenderer {
         // /**
         //  * 执行GPU Instancing 绘制
         //  * @param context 
@@ -145,6 +155,6 @@ namespace m4m.framework {
         //  */
         // GpuInstancingRender(context: renderContext, assetmgr: assetMgr, camera: m4m.framework.camera);
         /** 是否开启 GPU Instancing 绘制 */
-        isGpuInstancing () : boolean;
+        isGpuInstancing(): boolean;
     }
 }

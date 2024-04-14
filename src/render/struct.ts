@@ -736,7 +736,7 @@ namespace m4m.math {
             return this.arr;
         }
 
-        /** 获取当前长度 */
+        /** 获取当前长度 (设置为0时，不会实际清理容器，只是浮标移动到0)*/
         get length() { return this.buoy + 1; };
         set length(val) { this.buoy = val - 1; };
 

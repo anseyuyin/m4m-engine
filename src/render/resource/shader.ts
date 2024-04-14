@@ -21,7 +21,7 @@ namespace m4m.render {
     export const SHADER_PASS_SKIN = `skin`;
     export const SHADER_PASS_SKIN_TEX = `skinTex`;
     export const SHADER_PASS_LIGHTMAP = `lightmap`;
-    export const SHADER_PASS_SHADOW_CASTER = "shadowCaster";
+    export const SHADER_PASS_SHADOW_CASTER = "shadowcaster";
     export const SHADER_PASS_DEPTH = "depth";
     export const SHADER_PASS_QUAD = "quad";
     export const SHADER_PASS_FOG = "fog";

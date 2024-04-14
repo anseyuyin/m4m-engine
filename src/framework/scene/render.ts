@@ -268,6 +268,23 @@ namespace m4m.framework {
          */
         Overlay,
     }
+
+    /**
+     * 铸造阴影选项
+     */
+    export enum CastShadowsOption {
+        /** 关闭 */
+        Off = 0,
+        /** 开启 */
+        On,
+        /** 双面(双面都会投射阴影) */
+        TwoSided,
+        /** 
+         * 仅阴影 (不渲染自生，仅参与投射阴影)
+         */
+        ShadowsOnly,
+    }
+
     // /**
     //  * @public
     //  * @language zh_CN
@@ -300,6 +317,20 @@ namespace m4m.framework {
             this.renderLayers.push(transparent);
             this.renderLayers.push(overlay);
         }
+
+        //此处应该根据绘制分类处理
+        public renderLayers: renderLayer[];
+
+        private _castShadowsCommonIdxs: math.ReuseArray<number> = new math.ReuseArray<number>();
+
+        /**
+         * 获取 阴影投射渲染 common 层节点索引列表
+         * @returns 
+         */
+        public getCastShadowsCommonIdxs() {
+            return this._castShadowsCommonIdxs;
+        }
+
         /**
          * 清理列表
          */
@@ -314,6 +345,9 @@ namespace m4m.framework {
                 }
                 // this.renderLayers[i].gpuInstanceMap = {};
             }
+
+            //重置数组浮标到初始位置
+            this._castShadowsCommonIdxs.length = 0;
         }
         /**
          * 清理合批
@@ -348,12 +382,21 @@ namespace m4m.framework {
             // {
             //     idx = 1;
             // }
+            let layer = this.renderLayers[idx];
             let gpuInsR = (renderer as IRendererGpuIns);
-            if (!webgl.drawArraysInstanced || !gpuInsR.isGpuInstancing || !gpuInsR.isGpuInstancing()) {
-                this.renderLayers[idx].list.push(renderer);
+            let isGPUInstance = webgl.drawArraysInstanced && gpuInsR.isGpuInstancing && gpuInsR.isGpuInstancing();
+            let castShadowsR = ((renderer as any) as IRendererShadows);
+            let isCastShadows = idx == RenderLayerEnum.Common && castShadowsR.castShadows != null && castShadowsR.castShadows != CastShadowsOption.Off;
+
+            if (!isGPUInstance) {
+                if (isCastShadows) {
+                    this._castShadowsCommonIdxs.push(layer.list.length);
+                }
+                layer.list.push(renderer);
             } else {
-                this.renderLayers[idx].addInstance(gpuInsR);
+                layer.addInstance(gpuInsR);
             }
+
         }
         /**
          * 添加静态GPUInstance 渲染节点
@@ -369,17 +412,14 @@ namespace m4m.framework {
             this.renderLayers[idx].addInstanceToBatcher(renderer);
         }
 
-
-        //此处应该根据绘制分类处理
-        renderLayers: renderLayer[];
     }
     /**
      * @private
      */
     export class renderLayer {
-        needSort: boolean = false;
+        public needSort: boolean = false;
         //先暂时分配 透明与不透明两组
-        list: IRenderer[] = [];
+        public list: IRenderer[] = [];
         /**
          * 渲染层
          * @param _sort 排序？
@@ -388,15 +428,16 @@ namespace m4m.framework {
             this.needSort = _sort;
         }
 
+
         /** gpu instance map*/
         // gpuInstanceMap: {[sID:string] : IRendererGpuIns[]} = {};
-        gpuInstanceMap: { [sID: string]: math.ReuseArray<IRendererGpuIns> } = {};
-        gpuInstanceBatcherMap: { [sID: string]: meshGpuInsBatcher } = {};
+        public gpuInstanceMap: { [sID: string]: math.ReuseArray<IRendererGpuIns> } = {};
+        public gpuInstanceBatcherMap: { [sID: string]: meshGpuInsBatcher } = {};
         /**
          * 添加 GPUInstance 渲染节点
          * @param r GPUInstance 渲染节点
          */
-        addInstance(r: IRendererGpuIns) {
+        public addInstance(r: IRendererGpuIns) {
             let mr = r as meshRenderer;
             let mf = mr.filter;
             if (!mf || !mf.mesh) return;
@@ -414,7 +455,7 @@ namespace m4m.framework {
          * 添加 GPUInstance 渲染节点到合批
          * @param r GPUInstance 渲染节点
          */
-        addInstanceToBatcher(r: IRendererGpuIns) {
+        public addInstanceToBatcher(r: IRendererGpuIns) {
             let mr = r as meshRenderer;
             let mf = mr.filter;
             if (!mf) return;
@@ -441,7 +482,6 @@ namespace m4m.framework {
 
             bs.count++;
         }
-
 
         private static gpuInsRandererGUID = -1;
         private static gpuInsRandererGUIDMap = {};

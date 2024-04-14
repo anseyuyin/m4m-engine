@@ -210,7 +210,7 @@ namespace m4m.framework {
     */
     @reflect.nodeRender
     @reflect.nodeComponent
-    export class meshRenderer implements IRendererGpuIns {
+    export class meshRenderer implements IRendererGpuIns, IRendererShadows {
         static readonly ClassName: string = "meshRenderer";
         /**
          * mesh渲染组件
@@ -218,6 +218,8 @@ namespace m4m.framework {
         constructor() {
 
         }
+
+        castShadows: CastShadowsOption = CastShadowsOption.On;
         /**
          * @public
          * @language zh_CN
