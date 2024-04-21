@@ -15,13 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 /// <reference path="../../io/reflect.ts" />
-namespace m4m.framework
-{
+namespace m4m.framework {
     /**
      * @private
      */
-    export interface ICameraPostQueue
-    {
+    export interface ICameraPostQueue {
         /**
          * 执行渲染
          * @param scene 引擎场景 
@@ -34,17 +32,14 @@ namespace m4m.framework
     /**
      * @private
      */
-    export class cameraPostQueue_Depth implements ICameraPostQueue
-    {
+    export class cameraPostQueue_Depth implements ICameraPostQueue {
         /**
          * 相机后处理 深度
          */
-        constructor()
-        {
+        constructor() {
             this.renderTarget = null;
         }
-        render(scene: scene, context: renderContext, camera: camera)
-        {
+        render(scene: scene, context: renderContext, camera: camera) {
 
             //最后一个参数true 表示不用camera的clear 配置
             camera._targetAndViewport(this.renderTarget, scene, context, true);
@@ -64,19 +59,16 @@ namespace m4m.framework
     /**
      * @private
      */
-    export class cameraPostQueue_Quad implements ICameraPostQueue
-    {
+    export class cameraPostQueue_Quad implements ICameraPostQueue {
         material: material;//shader & uniform
         /**
          * 相机后处理 方块
          */
-        constructor()
-        {
+        constructor() {
             this.renderTarget = null;
             this.material = new material();
         }
-        render(scene: scene, context: renderContext, camera: camera)
-        {
+        render(scene: scene, context: renderContext, camera: camera) {
 
             camera._targetAndViewport(this.renderTarget, scene, context, true);
 
@@ -99,17 +91,14 @@ namespace m4m.framework
     /**
      * @private
      */
-    export class cameraPostQueue_Color implements ICameraPostQueue
-    {
+    export class cameraPostQueue_Color implements ICameraPostQueue {
         /**
          * 相机后处理颜色队列
          */
-        constructor()
-        {
+        constructor() {
             this.renderTarget = null;
         }
-        render(scene: scene, context: renderContext, camera: camera)
-        {
+        render(scene: scene, context: renderContext, camera: camera) {
             camera._targetAndViewport(this.renderTarget, scene, context, false);
             camera._renderOnce(scene, context, "");
             render.glRenderTarget.useNull(context.webgl);
@@ -119,8 +108,7 @@ namespace m4m.framework
     /**
      * @private
      */
-    export interface IOverLay
-    {
+    export interface IOverLay {
         init: boolean;
         sortOrder: number;
         /** 初始化调用一次 */
@@ -147,16 +135,13 @@ namespace m4m.framework
     */
     @reflect.nodeComponent
     @reflect.nodeCamera
-    export class camera implements INodeComponent
-    {
+    export class camera implements INodeComponent {
         static readonly ClassName: string = "camera";
         /**
          * 相机
          */
-        constructor()
-        {
-            for (let i = 0; i < 8; i++)
-            {
+        constructor() {
+            for (let i = 0; i < 8; i++) {
                 this.frameVecs.push(new math.vector3());
             }
         }
@@ -208,8 +193,7 @@ namespace m4m.framework
          */
         @m4m.reflect.UIStyle("rangeFloat", 1, 1000, 2)//加上这个标记，编辑器就能读取这个显示ui了
         @m4m.reflect.Field("number")
-        get near(): number
-        {
+        get near(): number {
             return this._near;
         }
         /**
@@ -219,10 +203,8 @@ namespace m4m.framework
          * 设置相机到近裁剪面距离
          * @version m4m 1.0
          */
-        set near(val: number)
-        {
-            if (this._opvalue > 0)
-            {
+        set near(val: number) {
+            if (this._opvalue > 0) {
                 if (val < 0.01) val = 0.01;
             }
             if (val >= this._far) val = this._far - 0.01;
@@ -239,8 +221,7 @@ namespace m4m.framework
          */
         @m4m.reflect.UIStyle("rangeFloat", 1, 1000, 999)
         @m4m.reflect.Field("number")
-        get far(): number
-        {
+        get far(): number {
             return this._far;
         }
         /**
@@ -250,8 +231,7 @@ namespace m4m.framework
          * 设置相机到远裁剪面距离
          * @version m4m 1.0
          */
-        set far(val: number)
-        {
+        set far(val: number) {
             if (val <= this._near) val = this._near + 0.01;
             this._far = val;
             this.projectMatrixDirty = true;
@@ -275,30 +255,25 @@ namespace m4m.framework
          * @deprecated [已弃用]
          */
         @reflect.compCall({ "use": "dirty", "display": "刷新camera" })
-        markDirty()
-        {
+        markDirty() {
 
         }
 
         isEditorCam: boolean = false;
 
-        start()
-        {
+        start() {
             this.isEditorCam = this.gameObject.transform.name.toLowerCase().indexOf("editor") >= 0;
         }
 
-        onPlay()
-        {
+        onPlay() {
 
         }
 
-        update(delta: number)
-        {
+        update(delta: number) {
             this._updateOverLays(delta);
 
             let _scene = sceneMgr.scene;
-            if (_scene.autoCollectlightCamera)
-            {
+            if (_scene.autoCollectlightCamera) {
                 // //收集摄像机
                 // var c = this;
                 // if (c.gameObject.visibleInScene)
@@ -316,12 +291,9 @@ namespace m4m.framework
         }
 
         /** overLays update */
-        private _updateOverLays(delta: number)
-        {
-            for (var i = 0; i < this.overlays.length; i++)
-            {
-                if (!this.overlays[i].init)
-                {
+        private _updateOverLays(delta: number) {
+            for (var i = 0; i < this.overlays.length; i++) {
+                if (!this.overlays[i].init) {
                     this.overlays[i].start(this);
                     this.overlays[i].init = true;
                 }
@@ -388,8 +360,7 @@ namespace m4m.framework
          * 添加2d渲染组件
          * @version m4m 1.0
          */
-        addOverLay(overLay: IOverLay)
-        {
+        addOverLay(overLay: IOverLay) {
             // if (overLay instanceof overlay2D)
             // {
             //     let lay = overLay as overlay2D;
@@ -408,8 +379,7 @@ namespace m4m.framework
          * 返回此相机上的overlays数组
          * @version m4m 1.0
          */
-        getOverLays()
-        {
+        getOverLays() {
             return this.overlays;
         }
         /**
@@ -419,8 +389,7 @@ namespace m4m.framework
          * 移除相机上的所有overly
          * @version m4m 1.0
          */
-        removeOverLay(overLay: IOverLay)
-        {
+        removeOverLay(overLay: IOverLay) {
             if (this.overlays == null)
                 return;
             let index = this.overlays.indexOf(overLay);
@@ -434,11 +403,9 @@ namespace m4m.framework
          * overlays 排序
          * @param lays overlays列表
          */
-        private sortOverLays(lays: IOverLay[])
-        {
+        private sortOverLays(lays: IOverLay[]) {
             if (!lays || lays.length < 1) return;
-            lays.sort((a, b) =>
-            {
+            lays.sort((a, b) => {
                 return a.sortOrder - b.sortOrder;
             });
         }
@@ -453,13 +420,11 @@ namespace m4m.framework
         * 计算相机的viewmatrix（视矩阵）
         * @version m4m 1.0
         */
-        calcViewMatrix(outMatrix?: m4m.math.matrix): boolean
-        {
+        calcViewMatrix(outMatrix?: m4m.math.matrix): boolean {
             let wMtx = this.gameObject.transform.getWorldMatrix();
             let dirty = !m4m.math.matrixEqual(wMtx, this.LastCamWorldMtx, 0.000001);
 
-            if (dirty)
-            {
+            if (dirty) {
                 m4m.math.matrixClone(wMtx, this.LastCamWorldMtx);
                 //视矩阵刚好是摄像机世界矩阵的逆
                 m4m.math.matrixInverse(wMtx, this.viewMatrix);
@@ -490,18 +455,15 @@ namespace m4m.framework
          * 计算相机视口像素rect
          * @version m4m 1.0
          */
-        calcViewPortPixel(app: application, viewPortPixel?: math.rect)
-        {
+        calcViewPortPixel(app: application, viewPortPixel?: math.rect) {
 
             let w: number;
             let h: number;
-            if (this.renderTarget == null)
-            {
+            if (this.renderTarget == null) {
                 w = app.width;
                 h = app.height;
             }
-            else
-            {
+            else {
                 w = this.renderTarget.width;
                 h = this.renderTarget.height;
             }
@@ -511,8 +473,7 @@ namespace m4m.framework
             cvpr.y = h * vp.y;
             cvpr.w = w * vp.w;
             cvpr.h = h * vp.h;
-            if (viewPortPixel)
-            {
+            if (viewPortPixel) {
                 m4m.math.rectClone(this.currViewPixelRect, viewPortPixel);
             }
 
@@ -530,10 +491,8 @@ namespace m4m.framework
          * 计算相机投影矩阵
          * @version m4m 1.0
          */
-        calcProjectMatrix(asp: number, outMatrix: m4m.math.matrix)
-        {
-            if (this.projectMatrixDirty || this.lastAsp != asp)
-            {
+        calcProjectMatrix(asp: number, outMatrix: m4m.math.matrix) {
+            if (this.projectMatrixDirty || this.lastAsp != asp) {
                 if (this._opvalue > 0)
                     math.matrixProject_PerspectiveLH(this._fov, asp, this._near, this._far, this.matProjP);
                 if (this._opvalue < 1)
@@ -563,16 +522,14 @@ namespace m4m.framework
          * @param outViewMatrix 
          * @param outProjectMatrix 
          */
-        calcViewProjectMatrix(app: application, outViewProjectMatrix?: math.matrix, outViewMatrix?: math.matrix, outProjectMatrix?: math.matrix)
-        {
+        calcViewProjectMatrix(app: application, outViewProjectMatrix?: math.matrix, outViewMatrix?: math.matrix, outProjectMatrix?: math.matrix) {
             let vd = this.calcViewMatrix(outViewMatrix);
             // let vpp = camera.helprect;
             // this.calcViewPortPixel(app, vpp);
             // let asp = vpp.w / vpp.h;
             let asp = this.currViewPixelASP;
             let pd = this.calcProjectMatrix(asp, outProjectMatrix);
-            if (vd || pd)
-            {
+            if (vd || pd) {
                 m4m.math.matrixMultiply(this.projectMatrix, this.viewMatrix, this.viewProjectMatrix);
                 if (outViewProjectMatrix)
                     math.matrixClone(this.viewProjectMatrix, outViewProjectMatrix);
@@ -592,8 +549,7 @@ namespace m4m.framework
          * 由屏幕坐标发射射线
          * @version m4m 1.0
          */
-        creatRayByScreen(screenpos: m4m.math.vector2, app: application, shareRayCache: boolean = true): ray
-        {
+        creatRayByScreen(screenpos: m4m.math.vector2, app: application, shareRayCache: boolean = true): ray {
             let src1 = camera.helpv3;
             math.vec3Set(src1, screenpos.x, screenpos.y, 0);
 
@@ -609,16 +565,13 @@ namespace m4m.framework
             m4m.math.vec3Subtract(dest2, dest1, dir);
             m4m.math.vec3Normalize(dir, dir);
             let ray: ray;
-            if (shareRayCache)
-            {
-                if (!camera._shareRay)
-                {
+            if (shareRayCache) {
+                if (!camera._shareRay) {
                     camera._shareRay = new m4m.framework.ray(dest1, dir);
                 }
                 ray = camera._shareRay;
                 ray.set(dest1, dir);
-            } else
-            {
+            } else {
                 ray = new m4m.framework.ray(dest1, dir);
             }
 
@@ -634,16 +587,14 @@ namespace m4m.framework
          * 由屏幕坐标得到model空间坐标
          * @version m4m 1.0
          */
-        calcModelPosFromScreenPos(app: application, screenPos: math.vector3, outModelPos: math.vector3)
-        {
+        calcModelPosFromScreenPos(app: application, screenPos: math.vector3, outModelPos: math.vector3) {
             // let vpp = camera.helprect;
             let vpp = this.currViewPixelRect;
             // this.calcViewPortPixel(app, vpp);
 
             let matinv = this.InverseViewProjectMatrix;
             let vpd = this.calcViewProjectMatrix(app);
-            if (vpd)
-            {
+            if (vpd) {
                 m4m.math.matrixInverse(this.viewProjectMatrix, matinv);
             }
 
@@ -664,8 +615,7 @@ namespace m4m.framework
          * 由世界坐标得到屏幕坐标
          * @version m4m 1.0
          */
-        calcScreenPosFromWorldPos(app: application, worldPos: math.vector3, outScreenPos: math.vector2)
-        {
+        calcScreenPosFromWorldPos(app: application, worldPos: math.vector3, outScreenPos: math.vector2) {
             // let vpp = camera.helprect;
             let vpp = this.currViewPixelRect;
             // this.calcViewPortPixel(app, vpp);
@@ -697,8 +647,7 @@ namespace m4m.framework
          * 由世界坐标得到裁剪空间坐标
          * @version m4m 1.0
          */
-        calcClipPosFromWorldPos(app: application, worldPos: math.vector3, outClipPos: math.vector3)
-        {
+        calcClipPosFromWorldPos(app: application, worldPos: math.vector3, outClipPos: math.vector3) {
             this.calcViewProjectMatrix(app);
             m4m.math.matrixTransformVector3(worldPos, this.viewProjectMatrix, outClipPos);
         }
@@ -710,19 +659,16 @@ namespace m4m.framework
          * 计算相机框
          * @param app 引擎app对象
          */
-        private calcCameraFrame(app: application)
-        {
+        private calcCameraFrame(app: application) {
             let matrix = this.gameObject.transform.getWorldMatrix();
             let _vpp = camera.helprect;
             this.calcViewPortPixel(app, _vpp);
             let tOpval = Math.ceil(this._opvalue);
             //检查是否需要更新
             if (math.matrixEqual(this.lastCamMtx, matrix) && math.rectEqul(this.lastCamRect, _vpp) &&
-                this.paraArr[0] == this._fov && this.paraArr[1] == this._near && this.paraArr[2] == this._far)
-            {
+                this.paraArr[0] == this._fov && this.paraArr[1] == this._near && this.paraArr[2] == this._far) {
                 //opvalue
-                if (this.paraArr[3] == tOpval && (tOpval == 1 || this.paraArr[4] == this._size))
-                {
+                if (this.paraArr[3] == tOpval && (tOpval == 1 || this.paraArr[4] == this._size)) {
                     return;
                 }
             }
@@ -742,8 +688,7 @@ namespace m4m.framework
             let nearSize = this._near * tanFov;
             let farSize = this._far * tanFov;
             //set size
-            if (needSize)
-            {
+            if (needSize) {
                 nearSize = farSize = this._size * 0.5;
             }
 
@@ -808,13 +753,11 @@ namespace m4m.framework
          * @version m4m 1.0
          */
         @m4m.reflect.Field("number")
-        set fov(val: number)
-        {
+        set fov(val: number) {
             this._fov = val;
             this.projectMatrixDirty = true;
         }
-        get fov()
-        {
+        get fov() {
             return this._fov;
         }
 
@@ -827,13 +770,11 @@ namespace m4m.framework
          * @version m4m 1.0
          */
         @m4m.reflect.Field("number")
-        set size(val: number)
-        {
+        set size(val: number) {
             this._size = val;
             this.projectMatrixDirty = true;
         }
-        get size()
-        {
+        get size() {
             return this._size;
         }
 
@@ -846,10 +787,8 @@ namespace m4m.framework
          * @version m4m 1.0
          */
         @m4m.reflect.Field("number")
-        set opvalue(val: number)
-        {
-            if (val > 0 && this._near < 0.01)
-            {
+        set opvalue(val: number) {
+            if (val > 0 && this._near < 0.01) {
                 this.near = 0.01;
                 if (this._far <= this._near)
                     this.far = this._near + 0.01;
@@ -857,8 +796,7 @@ namespace m4m.framework
             this._opvalue = val;
             this.projectMatrixDirty = true;
         }
-        get opvalue(): number
-        {
+        get opvalue(): number {
             return this._opvalue;
         }
 
@@ -869,8 +807,7 @@ namespace m4m.framework
          * @param z view 空间下Z轴值
          * @param out 返回的结果坐标位置
          */
-        getPosAtXPanelInViewCoordinateByScreenPos(screenPos: m4m.math.vector2, app: application, z: number, out: m4m.math.vector2)
-        {
+        getPosAtXPanelInViewCoordinateByScreenPos(screenPos: m4m.math.vector2, app: application, z: number, out: m4m.math.vector2) {
             let vpp = this.currViewPixelRect;
             // let vpp = camera.helprect;
             // this.calcViewPortPixel(app, vpp);
@@ -900,15 +837,13 @@ namespace m4m.framework
         * 填充渲染节点
         * @param scene 场景对象
         */
-        fillRenderer(scene: scene)
-        {
+        fillRenderer(scene: scene) {
             scene.renderList.clear();
-            if (scene.app.isFrustumCulling){
+            if (scene.app.isFrustumCulling) {
                 this.calcCameraFrame(scene.app);
             }
             let fID = scene.app.frameID;
-            if (camera.lastFID != fID)
-            {
+            if (camera.lastFID != fID) {
                 this.needUpdateWpos = true;
                 camera.lastFID = fID;
             }
@@ -930,8 +865,7 @@ namespace m4m.framework
          * @param node 节点
          * @param _isStatic 是否是静态节点
          */
-        private _fillRenderer(scene: scene, node: transform, _isStatic: boolean = false)
-        {
+        private _fillRenderer(scene: scene, node: transform, _isStatic: boolean = false) {
             if (!node.needFillRenderer) return;  //强制不fill 
             let go = node.gameObject;
             if (!go || !go.visible || (node.hasRendererComp == false && node.hasRendererCompChild == false)) return;  //自己没有渲染组件 且 子物体也没有 return
@@ -941,17 +875,14 @@ namespace m4m.framework
             const id = node.insId.getInsID();
             let renderer = go.renderer;
             let islayerPass = renderer != null ? this.CullingMask & (1 << renderer.renderLayer) : false;
-            if (node.dirtiedOfFrustumCulling || this.gameObject.transform.dirtiedOfFrustumCulling)
-            {
-                if (this.needUpdateWpos)
-                { // 更新世界坐标
+            if (node.dirtiedOfFrustumCulling || this.gameObject.transform.dirtiedOfFrustumCulling) {
+                if (this.needUpdateWpos) { // 更新世界坐标
                     node.getWorldTranslate();
                     node.inCameraVisible = false;
                 }
 
                 this.cullingMap[id] = false;
-                if (islayerPass && node.enableCulling && scene.app.isFrustumCulling)
-                {
+                if (islayerPass && node.enableCulling && scene.app.isFrustumCulling) {
                     this.cullingMap[id] = this.isCulling(node);
                     node.inCameraVisible = node.inCameraVisible || !this.cullingMap[id];
                 }
@@ -960,13 +891,19 @@ namespace m4m.framework
                     node.dirtiedOfFrustumCulling = false;
             }
 
-            if (islayerPass && !this.cullingMap[id])  //判断加入到渲染列表
+
+
+            if (islayerPass)  //判断加入到渲染列表
             {
-                scene.renderList.addRenderer(renderer, scene.webgl);
+                //拍摄相机的 视锥剔除判断
+                if (!this.cullingMap[id]) {
+                    scene.renderList.addRenderer(renderer, scene.webgl);
+                    
+                }
+                //阴影投射物的 剔除判断.. 目前先共享，拍摄相机的 视锥剔除
             }
 
-            if (node.children)
-            {
+            if (node.children) {
                 for (var i = 0, l = node.children.length; i < l; ++i)
                     this._fillRenderer(scene, node.children[i], go.isStatic);
             }
@@ -994,16 +931,14 @@ namespace m4m.framework
          * @param node 被检查节点
          * @returns 是被剔除？
          */
-        isCulling(node: transform)
-        {
+        isCulling(node: transform) {
 
             if (node.gameObject.hideFlags & HideFlags.DontFrustumCulling) return false;
             const vec3cache = this._vec3cache;
             let { aabb } = node;
             //var skinmesh = node.gameObject.getComponent("skinnedMeshRenderer") as m4m.framework.skinnedMeshRenderer;
             var skinmesh = node.gameObject.renderer as any; //skinnedMeshRenderer noly
-            if (skinmesh != null && skinmesh.size && skinmesh.aabb)
-            {
+            if (skinmesh != null && skinmesh.size && skinmesh.aabb) {
                 // 有些模型没有size, 会报错
                 // 如果有骨骼动画, 使用unity导出的aabb
                 // if (skinmesh.aabb != null)
@@ -1020,8 +955,7 @@ namespace m4m.framework
          * @param radius 半径
          * @param center 中心点
          */
-        cullTest(radius: number, center: math.vector3)
-        {
+        cullTest(radius: number, center: math.vector3) {
             // Left
             if (this.isRight(
                 this.frameVecs[this.fruMap.nearLD],
@@ -1093,8 +1027,7 @@ namespace m4m.framework
          * @param radius 球半径
          * @returns 是在右边
          */
-        private isRight(v0: m4m.math.vector3, v1: m4m.math.vector3, v2: m4m.math.vector3, pos: m4m.math.vector3, radius: number)
-        {
+        private isRight(v0: m4m.math.vector3, v1: m4m.math.vector3, v2: m4m.math.vector3, pos: m4m.math.vector3, radius: number) {
             const edge1 = this._edge1;
             const edge2 = this._edge2;
             const vec3cache = this._vec3cache;
@@ -1112,8 +1045,7 @@ namespace m4m.framework
         /**
          * @deprecated [已弃用]
         */
-        testFrustumCulling(scene: scene, node: transform)
-        {
+        testFrustumCulling(scene: scene, node: transform) {
             if (!node.gameObject.getComponent("frustumculling")) return true;//没挂识别组件即为通过测试
             let spherecol = node.gameObject.getComponent("spherecollider") as spherecollider;
             // let worldPos = node.getWorldTranslate();
@@ -1129,19 +1061,16 @@ namespace m4m.framework
         /**
         *  刷新计算 RenderTarget 或 viewport 的绘制矩形区
         */
-        _targetAndViewport(target: render.glRenderTarget, scene: scene, context: renderContext, withoutClear: boolean)
-        {
+        _targetAndViewport(target: render.glRenderTarget, scene: scene, context: renderContext, withoutClear: boolean) {
             {
                 let w: number;
                 let h: number;
-                if (target == null)
-                {
+                if (target == null) {
                     w = scene.app.width;
                     h = scene.app.height;
                     // render.glRenderTarget.useNull(context.webgl);
                 }
-                else
-                {
+                else {
                     w = target.width;
                     h = target.height;
                     target.use(context.webgl);
@@ -1151,47 +1080,38 @@ namespace m4m.framework
                 context.webgl.viewport(w * this.viewport.x, h * this.viewport.y, w * this.viewport.w, h * this.viewport.h);
                 context.webgl.depthRange(0, 1);
 
-                if (withoutClear == false)
-                {
+                if (withoutClear == false) {
 
                     //clear
-                    if (this.clearOption_Color && this.clearOption_Depth)
-                    {
+                    if (this.clearOption_Color && this.clearOption_Depth) {
                         context.webgl.depthMask(true);//zwrite 會影響clear depth，這個查了好一陣
                         m4m.render.glDrawPass.lastZWrite = true;
-                        if (this.postClearUseFogColor && scene.fog)
-                        {
+                        if (this.postClearUseFogColor && scene.fog) {
                             context.webgl.clearColor(scene.fog._Color.x, scene.fog._Color.y, scene.fog._Color.z, scene.fog._Color.w);
-                        } else
-                        {
+                        } else {
                             context.webgl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
                         }
                         //context.webgl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
                         context.webgl.clearDepth(1.0);
                         context.webgl.clear(context.webgl.COLOR_BUFFER_BIT | context.webgl.DEPTH_BUFFER_BIT);
                     }
-                    else if (this.clearOption_Depth)
-                    {
+                    else if (this.clearOption_Depth) {
                         context.webgl.depthMask(true);
                         m4m.render.glDrawPass.lastZWrite = true;
                         context.webgl.clearDepth(1.0);
                         context.webgl.clear(context.webgl.DEPTH_BUFFER_BIT);
                     }
-                    else if (this.clearOption_Color)
-                    {
-                        if (this.postClearUseFogColor && scene.fog)
-                        {
+                    else if (this.clearOption_Color) {
+                        if (this.postClearUseFogColor && scene.fog) {
                             context.webgl.clearColor(scene.fog._Color.x, scene.fog._Color.y, scene.fog._Color.z, scene.fog._Color.w);
-                        } else
-                        {
+                        } else {
                             context.webgl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
                         }
 
                         //context.webgl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
                         context.webgl.clear(context.webgl.COLOR_BUFFER_BIT);
                     }
-                    else
-                    {
+                    else {
 
                     }
 
@@ -1202,15 +1122,13 @@ namespace m4m.framework
         /**
         * 将当前场景所有能渲染节点，执行渲染一次
         */
-        _renderOnce(scene: scene, context: renderContext, drawtype: string)
-        {
+        _renderOnce(scene: scene, context: renderContext, drawtype: string) {
             context.drawtype = drawtype;
 
             let assetmgr = scene.app.getAssetMgr();
             // for (let layer of scene.renderList.renderLayers)
             let rlayers = scene.renderList.renderLayers;
-            for (let i = 0, l = rlayers.length; i < l; ++i)
-            {
+            for (let i = 0, l = rlayers.length; i < l; ++i) {
                 let ls = rlayers[i].list;
                 let len = ls.length;
                 for (let j = 0; j < len; ++j)
@@ -1228,8 +1146,7 @@ namespace m4m.framework
 
                 //gpu instancing process
                 let rmap = rlayers[i].gpuInstanceMap;
-                for (let key in rmap)
-                {
+                for (let key in rmap) {
                     let gpuList = rmap[key];
                     if (!gpuList) continue;
                     meshRenderer.GpuInstancingRender(context, gpuList);
@@ -1237,8 +1154,7 @@ namespace m4m.framework
 
                 // Batcher gpu instancing process
                 let bRmap = rlayers[i].gpuInstanceBatcherMap;
-                for (let key in bRmap)
-                {
+                for (let key in bRmap) {
                     let obj = bRmap[key];
                     if (!obj) continue;
                     meshRenderer.GpuInstancingRenderBatcher(context, obj);
@@ -1269,29 +1185,21 @@ namespace m4m.framework
          * @param context 引擎渲染上下文
          * @param contextIdx 上下文索引
          */
-        renderScene(scene: scene, context: renderContext, contextIdx: number)
-        {
+        renderScene(scene: scene, context: renderContext, contextIdx: number) {
             this._contextIdx = contextIdx;// scene.renderContext.indexOf(context);
             let rlayers = scene.renderList.renderLayers;
-            for (var i = 0, l = rlayers.length; i < l; ++i)
-            {
+            for (var i = 0, l = rlayers.length; i < l; ++i) {
                 let layer = rlayers[i];
                 let list = layer.list;
-                if (layer.needSort)
-                {
-                    if (list.length > 1)
-                    {
-                        list.sort((a, b) =>
-                        {
-                            if (a.queue != b.queue)
-                            {
+                if (layer.needSort) {
+                    if (list.length > 1) {
+                        list.sort((a, b) => {
+                            if (a.queue != b.queue) {
                                 return a.queue - b.queue;
-                            } else if (a instanceof ParticleSystem && b instanceof ParticleSystem)
-                            {
+                            } else if (a instanceof ParticleSystem && b instanceof ParticleSystem) {
                                 return b.sortingFudge - a.sortingFudge;
                             }
-                            else
-                            {
+                            else {
                                 // var matrixView = math.pool.new_matrix();
                                 // this.calcViewMatrix(matrixView);
                                 let matrixView = context.matrixView;
@@ -1311,17 +1219,14 @@ namespace m4m.framework
                     }
                 }
             }
-            if (this.postQueues.length == 0)
-            {
+            if (this.postQueues.length == 0) {
                 this._targetAndViewport(this.renderTarget, scene, context, false);
                 this._renderOnce(scene, context, "");
 
             }
-            else
-            {
+            else {
                 // for (let item of this.postQueues)
-                for (let i = 0, l = this.postQueues.length; i < l; ++i)
-                {
+                for (let i = 0, l = this.postQueues.length; i < l; ++i) {
                     this.postQueues[i].render(scene, context, this);
                 }
                 context.webgl.flush();
@@ -1329,12 +1234,10 @@ namespace m4m.framework
 
 
         }
-        remove()
-        {
+        remove() {
 
         }
-        clone()
-        {
+        clone() {
 
         }
     }
