@@ -140,4 +140,16 @@ namespace m4m.math {
 
         return true;
     }
+
+    /**
+     * 四维向量 通过指定color (rgba -> xyzw)
+     * @param vector 被设置的 四维向量
+     * @param col color
+     */
+    export function vec4SetByColor(vector: vector4 , col : color){
+        vector.x = col.r;
+        vector.y = col.g;
+        vector.z = col.b;
+        vector.w = col.a;
+    }
 }

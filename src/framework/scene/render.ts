@@ -398,6 +398,10 @@ namespace m4m.framework {
             }
 
         }
+
+        addCastShadowRenderer(renderer: IRenderer, webgl: WebGL2RenderingContext){
+
+        }
         /**
          * 添加静态GPUInstance 渲染节点
          * @param renderer GPUInstance 渲染节点
