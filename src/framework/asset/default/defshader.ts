@@ -15,6 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 namespace m4m.framework {
+    /**
+     * 引擎内建 shader
+     */
+    export class builtinShader {
+        public static readonly DEFAULT: string = "shader/def";
+        public static readonly DEFAULT_3D_BEFORE_UI: string = "shader/def3dbeforeui";
+        public static readonly DEFAULT_UI: string = "shader/defui";
+        public static readonly DEFAULT_FONT: string = "shader/defuifont";
+        public static readonly LINE: string = "shader/line";
+        public static readonly MATERIAL_COLOR: string = "shader/materialcolor";
+        public static readonly DEFAULT_UI_MASK: string = "shader/defmaskui";
+        public static readonly DEFAULT_FONT_MASK: string = "shader/defmaskfont";
+        public static readonly DEFAULT_LINE_TRAIL: string = "shader/deflinetrail";
+        public static readonly ULIT: string = "shader/ulit";
+        public static readonly ULIT_BLEND: string = "shader/ulit_blend";
+    }
+
     export class defShader {
 
         static vscode: string = `#version 300 es
@@ -319,7 +336,7 @@ namespace m4m.framework {
                 color = final ; 
             }`;
 
-        static vsdiffuse: string = `#version 300 es
+        static vsSimpleTex: string = `#version 300 es
             precision mediump float;
 
             layout(location = 0) in vec3 _glesVertex;
@@ -336,7 +353,7 @@ namespace m4m.framework {
             }
         `;
 
-        static fsdiffuse: string = `#version 300 es
+        static fsSimpleTexAlphaCut: string = `#version 300 es
             precision mediump float;
 
             uniform sampler2D _MainTex;
@@ -353,6 +370,19 @@ namespace m4m.framework {
             }
         `;
 
+
+        static fsSimpleTex: string = `#version 300 es
+            precision mediump float;
+
+            uniform sampler2D _MainTex;
+            uniform vec4 _MainColor;
+            in highp vec2 xlv_TEXCOORD0;
+            out vec4 color;
+            void main()
+            {
+                color = texture(_MainTex, xlv_TEXCOORD0) * _MainColor;
+            }
+        `;
 
         //editor
         static vsline: string = `#version 300 es
@@ -466,13 +496,15 @@ namespace m4m.framework {
             pool.compileVS(assetmgr.webgl, "defuifont", defShader.vscodefontUI);
             pool.compileFS(assetmgr.webgl, "defuifont", defShader.fscodefontUI);
 
-            pool.compileVS(assetmgr.webgl, "diffuse", defShader.vsdiffuse);
-            pool.compileFS(assetmgr.webgl, "diffuse", defShader.fsdiffuse);
+            pool.compileVS(assetmgr.webgl, "vsSimpleTex", defShader.vsSimpleTex);
+            pool.compileFS(assetmgr.webgl, "fsSimpleTexAlphaCut", defShader.fsSimpleTexAlphaCut);
 
             pool.compileVS(assetmgr.webgl, "line", defShader.vsline);
             pool.compileFS(assetmgr.webgl, "line", defShader.fsline);
 
             pool.compileVS(assetmgr.webgl, "materialcolor", defShader.vsmaterialcolor);
+
+            pool.compileFS(assetmgr.webgl, "fsSimpleTex", defShader.fsSimpleTex);
 
             pool.compileVS(assetmgr.webgl, "defUIMaskVS", defShader.vscodeMaskUI);
             pool.compileFS(assetmgr.webgl, "defUIMaskFS", defShader.fscodeMaskUI);
@@ -488,7 +520,8 @@ namespace m4m.framework {
             var program = pool.linkProgram(assetmgr.webgl, "def", "def");
             var program2 = pool.linkProgram(assetmgr.webgl, "defui", "defui");
             var programuifont = pool.linkProgram(assetmgr.webgl, "defuifont", "defuifont");
-            var programdiffuse = pool.linkProgram(assetmgr.webgl, "diffuse", "diffuse");
+            var programSimpleTexAlphaCut = pool.linkProgram(assetmgr.webgl, "vsSimpleTex", "fsSimpleTexAlphaCut");
+            var programmSimpleTex = pool.linkProgram(assetmgr.webgl, "vsSimpleTex", "fsSimpleTex");
             var programline = pool.linkProgram(assetmgr.webgl, "line", "line");
             var programmaterialcolor = pool.linkProgram(assetmgr.webgl, "materialcolor", "line");
             var programMaskUI = pool.linkProgram(assetmgr.webgl, "defUIMaskVS", "defUIMaskFS");
@@ -513,7 +546,7 @@ namespace m4m.framework {
             // }
 
             {
-                var sh = new shader("shader/def");
+                var sh = new shader(builtinShader.DEFAULT);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -530,11 +563,11 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/def3dbeforeui");
+                var sh = new shader(builtinShader.DEFAULT_3D_BEFORE_UI);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
-                p.setProgram(programdiffuse);
+                p.setProgram(programSimpleTexAlphaCut);
                 sh.passes[render.SHADER_PASS_BASE].push(p);
                 sh.fillUnDefUniform(p);
                 //sh._parseProperties(assetmgr,JSON.parse(this.diffuseShader).properties);
@@ -562,7 +595,7 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/defui");
+                var sh = new shader(builtinShader.DEFAULT_UI);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -578,7 +611,7 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/defuifont");
+                var sh = new shader(builtinShader.DEFAULT_FONT);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -594,7 +627,7 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/line");
+                var sh = new shader(builtinShader.LINE);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -609,7 +642,7 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/materialcolor");
+                var sh = new shader(builtinShader.MATERIAL_COLOR);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -626,7 +659,7 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/defmaskui");
+                var sh = new shader(builtinShader.DEFAULT_UI_MASK);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -642,7 +675,7 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/defmaskfont");
+                var sh = new shader(builtinShader.DEFAULT_FONT_MASK);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -659,7 +692,7 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/deflinetrail");
+                var sh = new shader(builtinShader.DEFAULT_LINE_TRAIL);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
@@ -676,17 +709,31 @@ namespace m4m.framework {
                 assetmgr.mapShader[sh.getName()] = sh;
             }
             {
-                var sh = new shader("shader/ulit");
+                var sh = new shader(builtinShader.ULIT);
                 sh.defaultAsset = true;
                 sh.passes[render.SHADER_PASS_BASE] = [];
                 var p = new render.glDrawPass();
                 sh.passes[render.SHADER_PASS_BASE].push(p);
-                p.setProgram(programdiffuse);
+                p.setProgram(programSimpleTexAlphaCut);
                 sh.fillUnDefUniform(p);
                 p.state_ztest = true;
                 p.state_zwrite = true;
                 p.state_showface = render.ShowFaceStateEnum.ALL;
                 sh.layer = RenderLayerEnum.Common;
+                assetmgr.mapShader[sh.getName()] = sh;
+            }
+            {
+                var sh = new shader(builtinShader.ULIT_BLEND);
+                sh.defaultAsset = true;
+                sh.passes[render.SHADER_PASS_BASE] = [];
+                var p = new render.glDrawPass();
+                sh.passes[render.SHADER_PASS_BASE].push(p);
+                p.setProgram(programmSimpleTex);
+                sh.fillUnDefUniform(p);
+                p.state_ztest = false;
+                p.state_showface = render.ShowFaceStateEnum.ALL;
+                p.setAlphaBlend(render.BlendModeEnum.Blend);
+                sh.layer = RenderLayerEnum.Transparent;
                 assetmgr.mapShader[sh.getName()] = sh;
             }
         }

@@ -433,7 +433,11 @@ namespace m4m.framework {
         addCamera(cam: camera) {
             if (this.renderCameras.indexOf(cam) != -1) return;
             this.renderCameras.push(cam);
-            this.renderContext.push(new renderContext(this.webgl));
+
+            var cl = this.renderCameras.length;
+            while (this.renderContext.length < cl) {
+                this.renderContext.push(new renderContext(this.webgl));
+            }
         }
         /**
          * 清除场景中添加过的相机 （autoCollectlightCamera : false 时 有效 ）
